@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -28,7 +29,7 @@ var setupLogWorking bool
 var setupLogLock sync.Mutex
 
 func SetupLog() {
-	if logDir != "" {
+	if logDir != "" { 
 		ok := setupLogLock.TryLock()
 		if !ok {
 			log.Println("SetupLog is working")
@@ -56,4 +57,20 @@ func SysLog(s string) {
 func SysError(s string) {
 	t := time.Now().Format("2006-01-02 15:04:05")
 	_, _ = fmt.Fprintf(gin.DefaultErrorWriter, "[SYSERR] %v | %s \n", t, s)
+}
+
+func SysWarn(s string) {
+	t := time.Now().Format("2006-01-02 15:04:05")
+	_, _ = fmt.Fprintf(gin.DefaultWriter, "[SYSWARN] %v | %s \n", t, s)
+}
+
+func UserLog(ctx context.Context, logType string, logContent string) {
+	writer := gin.DefaultErrorWriter // 默认输出到错误输出
+	if logType == logINFO {          // 日志类型为INFO时，输出到标准输出
+		writer = gin.DefaultWriter
+	}
+	if ctx.Value(Request) != nil {
+		
+	t := time.Now().Format("2006-01-02 15:04:05")
+	_, _ = fmt.Fprintf(writer, "[%s] %v | %s \n", logType, t, logContent)
 }
