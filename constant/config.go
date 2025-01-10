@@ -13,3 +13,27 @@ const (
 	RequestIDKey = RequestIDKeyType("X-Nexus-AI-Request-ID")
 	KeyCharset   = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
+
+const ( // 默认mysql配置
+	MysqlDefaultHost     = "localhost" // 默认mysql地址
+	MysqlDefaultPort     = "11001"     // 默认mysql端口
+	MysqlDefaultUser     = "nexus"     // 默认mysql用户
+	MysqlDefaultPassword = "nexus123"  // 默认mysql密码
+	MysqlDefaultDatabase = "nexus"     // 默认mysql数据库
+)
+
+const ( // 默认redis配置
+	RedisDefaultHost         = "localhost" // 默认redis地址 localhost
+	RedisDefaultPort         = "11002"     // 默认redis端口 11002
+	RedisDefaultPassword     = "nexus123"  // 默认redis密码 nexus123
+	RedisDefaultDB           = "0"         // 默认redis数据库 0
+	RedisDefaultMaxPoolSize  = "10000"     // 默认redis连接池最大连接数 1e4
+	RedisDefaultMinIdleConns = "100"       // 默认redis连接池最小空闲连接数 1e2
+)
+
+const ( // 默认rabbitmq配置
+	RabbitMQDefaultHost     = "localhost" // 默认rabbitmq地址
+	RabbitMQDefaultPort     = "11003"     // 默认rabbitmq端口
+	RabbitMQDefaultUser     = "nexus"     // 默认rabbitmq用户
+	RabbitMQDefaultPassword = "nexus123"  // 默认rabbitmq密码
+)

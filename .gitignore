@@ -53,3 +53,11 @@ config.local.yaml
 # 临时文件
 tmp/
 temp/
+
+# 第三方服务数据
+rabbitmq-container/
+redis-container/
+mysql-container/
+
+# node依赖
+**/node_modules/
