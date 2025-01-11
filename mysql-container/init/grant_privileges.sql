@@ -1,0 +1,3 @@
+-- 授予nexus用户所有数据库的所有权限
+GRANT ALL PRIVILEGES ON *.* TO 'nexus'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES; 

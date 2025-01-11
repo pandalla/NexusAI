@@ -66,6 +66,7 @@ services:
       - MYSQL_USER=nexus
       - MYSQL_PASSWORD=nexus123
       - MYSQL_DATABASE=nexus
+      - MYSQL_INIT_SCRIPTS_ENABLED=true
       - TZ=Asia/Shanghai
       - MYSQL_CHARACTER_SET_SERVER=utf8mb4
       - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci

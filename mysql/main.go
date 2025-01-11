@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	db *sql.DB
-	mu sync.RWMutex
+	db   *sql.DB
+	mu   sync.RWMutex
+	conf *Config
 )
 
 // GetDB 获取MySQL数据库连接实例
@@ -31,17 +32,23 @@ func HealthCheck(ctx context.Context) error {
 	return client.PingContext(ctx)
 }
 
+// GetConfig 获取MySQL配置
+func GetConfig() *Config {
+	return conf
+}
+
 // InitMySQL 初始化MySQL连接池
 func InitMySQL(cfg *Config) error {
 	if cfg == nil {
 		cfg = DefaultConfig()
 	}
+	conf = cfg
 
 	if err := cfg.Validate(); err != nil {
 		return fmt.Errorf("invalid mysql config: %v", err)
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true&sql_mode='NO_ENGINE_SUBSTITUTION'",
 		cfg.Basic.User,
 		cfg.Basic.Password,
 		cfg.Basic.Host,

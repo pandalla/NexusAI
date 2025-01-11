@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"nexus-ai/constant"
 	"nexus-ai/middleware"
+	"nexus-ai/model"
 	"nexus-ai/mysql"
 	"nexus-ai/redis"
 	"nexus-ai/router"
@@ -28,6 +29,12 @@ func main() {
 			utils.SysError("MySQL | " + err.Error())
 		}
 	}()
+
+	// 初始化Gorm
+	if err := model.InitGorm(); err != nil {
+		utils.FatalLog("Gorm | " + err.Error())
+	}
+	utils.SysInfo("Gorm setup completed")
 
 	// 初始化Redis
 	if err := redis.Setup(); err != nil {
