@@ -57,6 +57,28 @@ func GetDB() *gorm.DB {
 	return db
 }
 
+// 创建迁移辅助函数
+func migrateTable(db *gorm.DB, table interface{}) error {
+	tableName := db.NamingStrategy.TableName(fmt.Sprintf("%T", table))
+	migrator := db.Migrator()
+
+	exists := migrator.HasTable(table)
+	if exists {
+		utils.SysInfo(fmt.Sprintf("表 %s 已存在，开始迁移", tableName))
+		if err := migrator.AutoMigrate(table); err != nil {
+			return fmt.Errorf("迁移表 %s 失败: %v", tableName, err)
+		}
+		utils.SysInfo(fmt.Sprintf("成功迁移表 %s", tableName))
+	} else {
+		utils.SysInfo(fmt.Sprintf("开始创建表 %s", tableName))
+		if err := migrator.AutoMigrate(table); err != nil {
+			return fmt.Errorf("创建表 %s 失败: %v", tableName, err)
+		}
+		utils.SysInfo(fmt.Sprintf("成功创建表 %s", tableName))
+	}
+	return nil
+}
+
 // Setup 初始化所有数据库表
 func Setup(db *gorm.DB) error {
 	// 先尝试创建数据库（如果不存在）
@@ -73,7 +95,6 @@ func Setup(db *gorm.DB) error {
 	// 设置表选项
 	db = db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci")
 
-	// 按照依赖关系顺序创建表
 	// 第一批：基础表（无外键依赖）
 	baseTables := []interface{}{
 		&User{},                 // 用户表最基础
@@ -83,13 +104,9 @@ func Setup(db *gorm.DB) error {
 	}
 
 	for _, table := range baseTables {
-		tableName := fmt.Sprintf("%T", table)
-		utils.SysInfo("正在创建基础表: " + tableName)
-		if err := db.AutoMigrate(table); err != nil {
-			utils.SysError("创建表 " + tableName + " 失败: " + err.Error())
-			return fmt.Errorf("failed to migrate base table %T: %v", table, err)
+		if err := migrateTable(db, table); err != nil {
+			return fmt.Errorf("failed to migrate base table: %v", err)
 		}
-		utils.SysInfo("成功创建表: " + tableName)
 	}
 
 	// 第二批：依赖基础表的表
@@ -99,13 +116,9 @@ func Setup(db *gorm.DB) error {
 	}
 
 	for _, table := range secondaryTables {
-		tableName := fmt.Sprintf("%T", table)
-		utils.SysInfo("正在创建依赖基础表的表: " + tableName)
-		if err := db.AutoMigrate(table); err != nil {
-			utils.SysError("创建表 " + tableName + " 失败: " + err.Error())
-			return fmt.Errorf("failed to migrate secondary table %T: %v", table, err)
+		if err := migrateTable(db, table); err != nil {
+			return fmt.Errorf("failed to migrate secondary table: %v", err)
 		}
-		utils.SysInfo("成功创建表: " + tableName)
 	}
 
 	// 第三批：依赖第二批表的表
@@ -119,13 +132,9 @@ func Setup(db *gorm.DB) error {
 	}
 
 	for _, table := range tertiaryTables {
-		tableName := fmt.Sprintf("%T", table)
-		utils.SysInfo("正在创建依赖基础表的表: " + tableName)
-		if err := db.AutoMigrate(table); err != nil {
-			utils.SysError("创建表 " + tableName + " 失败: " + err.Error())
-			return fmt.Errorf("failed to migrate tertiary table %T: %v", table, err)
+		if err := migrateTable(db, table); err != nil {
+			return fmt.Errorf("failed to migrate tertiary table: %v", err)
 		}
-		utils.SysInfo("成功创建表: " + tableName)
 	}
 
 	// 第四批：日志表（依赖多个其他表）
@@ -142,13 +151,9 @@ func Setup(db *gorm.DB) error {
 	}
 
 	for _, table := range logTables {
-		tableName := fmt.Sprintf("%T", table)
-		utils.SysInfo("正在创建日志表: " + tableName)
-		if err := db.AutoMigrate(table); err != nil {
-			utils.SysError("创建表 " + tableName + " 失败: " + err.Error())
-			return fmt.Errorf("failed to migrate log table %T: %v", table, err)
+		if err := migrateTable(db, table); err != nil {
+			return fmt.Errorf("failed to migrate log table: %v", err)
 		}
-		utils.SysInfo("成功创建表: " + tableName)
 	}
 
 	return nil

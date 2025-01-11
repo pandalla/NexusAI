@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"nexus-ai/constant"
@@ -8,8 +9,10 @@ import (
 	"nexus-ai/model"
 	"nexus-ai/mysql"
 	"nexus-ai/redis"
+	"nexus-ai/repository"
 	"nexus-ai/router"
 	"nexus-ai/utils"
+
 	"os"
 	"strconv"
 
@@ -35,6 +38,13 @@ func main() {
 		utils.FatalLog("Gorm | " + err.Error())
 	}
 	utils.SysInfo("Gorm setup completed")
+	// 创建测试用户
+	userRepo := repository.NewUserRepository(model.GetDB())
+	if err := userRepo.CreateTestUser(context.Background()); err != nil {
+		utils.SysError("Create test user failed: " + err.Error())
+	} else {
+		utils.SysInfo("Test user created successfully")
+	}
 
 	// 初始化Redis
 	if err := redis.Setup(); err != nil {

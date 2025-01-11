@@ -3,7 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"nexus-ai/model"
+	"nexus-ai/utils"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -26,6 +29,8 @@ type UserRepository interface {
 	Delete(ctx context.Context, userID string) error
 	// 批量获取用户
 	List(ctx context.Context, offset, limit int) ([]*model.User, int64, error)
+	// 创建测试用户
+	CreateTestUser(ctx context.Context) error
 }
 
 type userRepository struct {
@@ -120,4 +125,36 @@ func (r *userRepository) List(ctx context.Context, offset, limit int) ([]*model.
 	}
 
 	return users, total, nil
+}
+
+// CreateTestUser 创建测试用户
+func (r *userRepository) CreateTestUser(ctx context.Context) error {
+	// 检查是否已存在测试用户
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.User{}).Where("username LIKE ?", "test_user_%").Count(&count).Error; err != nil {
+		return fmt.Errorf("检查测试用户失败: %w", err)
+	}
+
+	if count > 0 {
+		return fmt.Errorf("测试用户已存在")
+	}
+
+	// 生成随机用户名
+	randomUsername := fmt.Sprintf("test_user_%s", utils.GenerateRandomString(8))
+	// 生成随机邮箱
+	randomEmail := fmt.Sprintf("test_%s@example.com", utils.GenerateRandomString(8))
+	// 生成随机手机号
+	randomPhone := fmt.Sprintf("1%s", utils.GenerateRandomNumber(10))
+
+	testUser := &model.User{
+		UserID:    utils.GenerateRandomUUID(12),
+		Username:  randomUsername,
+		Email:     randomEmail,
+		Phone:     randomPhone,
+		Password:  utils.HashPassword("test123456"), // 默认密码
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	return r.Create(ctx, testUser)
 }
