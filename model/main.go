@@ -16,7 +16,7 @@ import (
 
 var db *gorm.DB
 
-// InitGorm 初始化数据库连接和表结构
+// 初始化数据库连接和表结构
 func InitGorm() error {
 	sqlDB := mysql.GetDB()
 	if sqlDB == nil {
@@ -34,8 +34,8 @@ func InitGorm() error {
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true, // 使用单数表名
 		},
-		Logger:               logger.Default.LogMode(logger.Info), // 添加详细日志
-		DisableAutomaticPing: true,                                // 禁用自动 ping
+		Logger:               logger.Default.LogMode(logger.Silent), // 添加详细日志
+		DisableAutomaticPing: true,                                  // 禁用自动 ping
 	})
 	if err != nil {
 		return fmt.Errorf("failed to initialize GORM: %v", err)
