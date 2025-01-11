@@ -117,6 +117,6 @@ func SysError(s string) { // 系统错误日志
 
 func FatalLog(s string) { // 致命错误日志 系统退出
 	t := time.Now().Format("2006-01-02 15:04:05")
-	_, _ = fmt.Fprintf(gin.DefaultWriter, "%s[SYSLOG]%s  %v | %s%s%s \n", sysColorRed, colorReset, t, sysColorRed, s, colorReset)
+	_, _ = fmt.Fprintf(gin.DefaultWriter, "%s[SYSFAIL]%s %v | %s%s%s \n", sysColorRed, colorReset, t, sysColorRed, s, colorReset)
 	os.Exit(1)
 }

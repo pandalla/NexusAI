@@ -64,17 +64,17 @@ func migrateTable(db *gorm.DB, table interface{}) error {
 
 	exists := migrator.HasTable(table)
 	if exists {
-		utils.SysInfo(fmt.Sprintf("表 %s 已存在，开始迁移", tableName))
+		utils.SysInfo(fmt.Sprintf("Table %s already exists, Migrating...", tableName))
 		if err := migrator.AutoMigrate(table); err != nil {
-			return fmt.Errorf("迁移表 %s 失败: %v", tableName, err)
+			return fmt.Errorf("failed to migrate table %s: %v", tableName, err)
 		}
-		utils.SysInfo(fmt.Sprintf("成功迁移表 %s", tableName))
+		utils.SysInfo(fmt.Sprintf("Successfully migrated table %s", tableName))
 	} else {
-		utils.SysInfo(fmt.Sprintf("开始创建表 %s", tableName))
+		utils.SysInfo(fmt.Sprintf("Creating table %s...", tableName))
 		if err := migrator.AutoMigrate(table); err != nil {
-			return fmt.Errorf("创建表 %s 失败: %v", tableName, err)
+			return fmt.Errorf("failed to create table %s: %v", tableName, err)
 		}
-		utils.SysInfo(fmt.Sprintf("成功创建表 %s", tableName))
+		utils.SysInfo(fmt.Sprintf("Successfully created table %s", tableName))
 	}
 	return nil
 }
@@ -97,9 +97,12 @@ func Setup(db *gorm.DB) error {
 
 	// 第一批：基础表（无外键依赖）
 	baseTables := []interface{}{
+		&UserGroup{},
+		&ChannelGroup{},
+		&ModelGroup{},
 		&User{},                 // 用户表最基础
-		&Model{},                // 模型表基础
 		&Channel{},              // 渠道表基础
+		&Model{},                // 模型表基础
 		&worker.WorkerCluster{}, // 集群表基础
 	}
 
@@ -111,8 +114,8 @@ func Setup(db *gorm.DB) error {
 
 	// 第二批：依赖基础表的表
 	secondaryTables := []interface{}{
-		&Token{},         // 依赖 User
-		&worker.Worker{}, // 依赖 WorkerCluster
+		&Token{},              // 依赖 User
+		&worker.WorkerGroup{}, // 依赖 WorkerCluster
 	}
 
 	for _, table := range secondaryTables {
@@ -123,7 +126,7 @@ func Setup(db *gorm.DB) error {
 
 	// 第三批：依赖第二批表的表
 	tertiaryTables := []interface{}{
-		&worker.WorkerNode{}, // 依赖 Worker 和 WorkerCluster
+		&worker.WorkerNode{}, // 依赖 WorkerGroup 和 WorkerCluster
 		&Usage{},             // 依赖 Token, User, Channel, Model
 		&Quota{},             // 依赖 User
 		&Payment{},           // 依赖 User
