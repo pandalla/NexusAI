@@ -1,0 +1,168 @@
+services:
+  nexus-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-ai
+    restart: unless-stopped
+    ports:
+      - "10000:10000"
+    expose:
+      - "10000"
+    environment:
+      - GIN_MODE=release
+      - BACKEND_PORT=10000
+
+      # MySQL 配置
+      - MYSQL_HOST=nexus-mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=nexus
+      - MYSQL_PASSWORD=nexus123
+      - MYSQL_DATABASE=nexus
+
+      # Redis 配置
+      - REDIS_HOST=nexus-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=nexus123
+      - REDIS_DB=0
+      - REDIS_MAX_POOL_SIZE=10000
+      - REDIS_MIN_IDLE_CONNS=1000
+      
+      # RabbitMQ 配置
+      - RABBITMQ_HOST=nexus-rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=nexus
+      - RABBITMQ_PASSWORD=nexus123
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    networks:
+      nexus-network:
+        ipv4_address: 172.168.240.2
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --server-response nexus-ai:${PORT:-10000}/health 2>&1 | grep '200 OK' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+  
+  mysql:
+    image: mysql:8.0
+    container_name: nexus-mysql
+    restart: unless-stopped
+    ports:
+      - "11001:3306"
+    expose:
+      - "3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=nexus123
+      - MYSQL_USER=nexus
+      - MYSQL_PASSWORD=nexus123
+      - MYSQL_DATABASE=nexus
+      - TZ=Asia/Shanghai
+      - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+      - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      nexus-network:
+        ipv4_address: 172.168.240.3
+    volumes:
+      - ./mysql-container/data:/var/lib/mysql
+      - ./mysql-container/conf:/etc/mysql/conf.d
+      - ./mysql-container/logs:/var/log/mysql
+      - ./mysql-container/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "nexus-mysql", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:latest
+    container_name: nexus-redis
+    restart: unless-stopped
+    ports:
+      - "11002:6379"
+    expose:
+      - "6379"
+    command: >
+      redis-server 
+      --requirepass nexus123
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      nexus-network:
+        ipv4_address: 172.168.240.4
+    volumes:
+      - ./redis-container/data:/data
+      - ./redis-container/conf:/usr/local/etc/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "nexus-redis", "-a", "${REDIS_PASSWORD:-nexus123}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: nexus-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "11003:15672"   # 管理界面端口
+    expose:
+      - "5672"          # AMQP 端口
+      - "15672"         # 管理界面端口
+    environment:
+      - RABBITMQ_DEFAULT_USER=nexus
+      - RABBITMQ_DEFAULT_PASS=nexus123
+      - TZ=Asia/Shanghai
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      nexus-network:
+        ipv4_address: 172.168.240.5
+    volumes:
+      - ./rabbitmq-container/data:/var/lib/rabbitmq
+      - ./rabbitmq-container/log:/var/log/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  nexus-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.168.240.0/24
+          gateway: 172.168.240.1 

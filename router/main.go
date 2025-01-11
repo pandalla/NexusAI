@@ -1,10 +1,15 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter(router *gin.Engine) {
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "This is health check!"})
+	})
 	SetupBillingRouter(router)
 	SetupChannelRouter(router)
 	SetupConfigRouter(router)
