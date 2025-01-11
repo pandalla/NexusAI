@@ -11,6 +11,8 @@ var (
 	stopChan               chan struct{}
 	consecutiveFailures    int
 	maxConsecutiveFailures = 3
+	healthCheckInterval    = 20 * time.Second
+	healthCheckTimeout     = 5 * time.Second
 )
 
 func Setup() error {
@@ -21,7 +23,7 @@ func Setup() error {
 
 	stopChan = make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(20 * time.Second)
+		ticker := time.NewTicker(healthCheckInterval)
 		defer ticker.Stop()
 
 		for {
@@ -68,7 +70,7 @@ func Shutdown() error {
 	}
 
 	// 创建带超时的context
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), healthCheckTimeout)
 	defer cancel()
 
 	return GracefulClose(ctx)

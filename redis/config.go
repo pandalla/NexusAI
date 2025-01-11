@@ -67,6 +67,9 @@ func (c *Config) Validate() error {
 	if c.Pool.Timeout <= 0 || c.Pool.MaxLifetime <= 0 || c.Pool.MaxIdleTime <= 0 {
 		return fmt.Errorf("pool timeout values must be positive")
 	}
+	if c.Pool.Timeout > 24*time.Hour || c.Pool.MaxLifetime > 24*time.Hour || c.Pool.MaxIdleTime > 24*time.Hour {
+		return fmt.Errorf("pool timeout values too large")
+	}
 	if c.Pool.RetryBackoff <= 0 {
 		return fmt.Errorf("retry backoff must be positive")
 	}
