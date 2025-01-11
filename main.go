@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"nexus-ai/constant"
 	"nexus-ai/middleware"
+	"nexus-ai/mysql"
 	"nexus-ai/redis"
 	"nexus-ai/router"
 	"nexus-ai/utils"
@@ -16,6 +17,17 @@ import (
 
 func main() {
 	utils.SetupLog()
+
+	// 初始化MySQL
+	if err := mysql.Setup(); err != nil {
+		utils.FatalLog("MySQL | " + err.Error())
+	}
+	utils.SysInfo("MySQL setup completed")
+	defer func() {
+		if err := mysql.Shutdown(); err != nil {
+			utils.SysError("MySQL | " + err.Error())
+		}
+	}()
 
 	// 初始化Redis
 	if err := redis.Setup(); err != nil {
