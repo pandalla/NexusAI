@@ -39,14 +39,30 @@ type Config struct {
 
 // Validate 验证配置的合法性
 func (c *Config) Validate() error {
+	// 验证基础配置
+	if c.Basic.Host == "" {
+		return fmt.Errorf("redis host cannot be empty")
+	}
 	if c.Basic.Port < 1 || c.Basic.Port > 65535 {
 		return fmt.Errorf("invalid port number: %d", c.Basic.Port)
 	}
 	if c.Basic.DB < 0 {
 		return fmt.Errorf("invalid DB number: %d", c.Basic.DB)
 	}
+
+	// 验证连接池配置
+	if c.Pool.Size <= 0 {
+		return fmt.Errorf("pool size must be positive")
+	}
+	if c.Pool.MinIdleConns < 0 {
+		return fmt.Errorf("min idle connections cannot be negative")
+	}
 	if c.Pool.Size < c.Pool.MinIdleConns {
-		return fmt.Errorf("pool size (%d) cannot be smaller than min idle connections (%d)", c.Pool.Size, c.Pool.MinIdleConns)
+		return fmt.Errorf("pool size (%d) cannot be smaller than min idle connections (%d)",
+			c.Pool.Size, c.Pool.MinIdleConns)
+	}
+	if c.Pool.MaxConnAttempts <= 0 {
+		return fmt.Errorf("max connection attempts must be positive")
 	}
 	if c.Pool.Timeout <= 0 || c.Pool.MaxLifetime <= 0 || c.Pool.MaxIdleTime <= 0 {
 		return fmt.Errorf("pool timeout values must be positive")
