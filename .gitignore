@@ -57,7 +57,14 @@ temp/
 # 第三方服务数据
 rabbitmq-container/
 redis-container/
-mysql-container/
+
+# MySQL 容器配置
+# 首先标记不忽略 mysql-container 目录
+!mysql-container/
+# 然后忽略 mysql-container 下的所有内容
+mysql-container/*
+# 最后标记不忽略 init 目录
+!mysql-container/init/
 
 # node依赖
 **/node_modules/

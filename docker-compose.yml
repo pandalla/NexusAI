@@ -66,6 +66,7 @@ services:
       - MYSQL_USER=nexus
       - MYSQL_PASSWORD=nexus123
       - MYSQL_DATABASE=nexus
+      - MYSQL_INIT_SCRIPTS_ENABLED=true
       - TZ=Asia/Shanghai
       - MYSQL_CHARACTER_SET_SERVER=utf8mb4
       - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
@@ -82,9 +83,9 @@ services:
         ipv4_address: 172.168.240.3
     volumes:
       - ./mysql-container/data:/var/lib/mysql
-      - ./mysql-container/conf:/etc/mysql/conf.d
+      - ./mysql-container/conf:/etc/mysql/conf.d:ro
       - ./mysql-container/logs:/var/log/mysql
-      - ./mysql-container/init:/docker-entrypoint-initdb.d
+      - ./mysql-container/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "nexus-mysql", "--silent"]
       interval: 5s
