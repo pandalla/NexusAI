@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -19,20 +18,33 @@ type Billing struct {
 	BillingCurrency string `gorm:"column:billing_currency;size:10;not null" json:"billing_currency"`                   // 账单币种 usd cny hkd ...
 	BillingStatus   int8   `gorm:"column:billing_status;index;not null;default:1" json:"billing_status"`               // 账单状态(1:未出账 2:已出账 3:已支付 4:已逾期)
 
-	BillingMoney   common.JSON `gorm:"column:billing_money;type:json" json:"billing_money"`     // 账单金额 单位 分
-	BillingDetails common.JSON `gorm:"column:billing_details;type:json" json:"billing_details"` // 账单明细(各模型用量统计)
-	QuotaDetails   common.JSON `gorm:"column:quota_details;type:json" json:"quota_details"`     // 配额使用明细
-	PayTime        *time.Time  `gorm:"column:pay_time" json:"pay_time"`                         // 支付时间
-	StartTime      time.Time   `gorm:"column:start_time;not null" json:"start_time"`            // 账单开始时间
-	EndTime        time.Time   `gorm:"column:end_time;not null" json:"end_time"`                // 账单结束时间
-	DueTime        time.Time   `gorm:"column:due_time;not null" json:"due_time"`                // 账单到期时间
+	BillingMoney   common.JSON     `gorm:"column:billing_money;type:json" json:"billing_money"`     // 账单金额 单位 分
+	BillingDetails common.JSON     `gorm:"column:billing_details;type:json" json:"billing_details"` // 账单明细(各模型用量统计)
+	QuotaDetails   common.JSON     `gorm:"column:quota_details;type:json" json:"quota_details"`     // 配额使用明细
+	PayTime        utils.MySQLTime `gorm:"column:pay_time" json:"pay_time"`                         // 支付时间
+	StartTime      utils.MySQLTime `gorm:"column:start_time;not null" json:"start_time"`            // 账单开始时间
+	EndTime        utils.MySQLTime `gorm:"column:end_time;not null" json:"end_time"`                // 账单结束时间
+	DueTime        utils.MySQLTime `gorm:"column:due_time;not null" json:"due_time"`                // 账单到期时间
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                          // 创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`                                                                      // 删除时间
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 更新时间
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`                // 删除时间
 }
 
 // TableName 表名
 func (Billing) TableName() string {
 	return "billings"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (billing *Billing) BeforeCreate(tx *gorm.DB) error {
+	billing.CreatedAt = utils.MySQLTime(utils.GetTime())
+	billing.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (billing *Billing) BeforeUpdate(tx *gorm.DB) error {
+	billing.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

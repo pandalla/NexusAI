@@ -74,16 +74,16 @@ func DefaultConfig() *Config {
 	cfg := &Config{}
 
 	// 解析基础配置
-	port, err := strconv.Atoi(utils.GetEnv("MYSQL_PORT", constant.MysqlDefaultPort))
+	port, err := strconv.Atoi(utils.GetEnv("MYSQL_PORT", constant.MySQLDefaultPort))
 	if err != nil {
-		port, _ = strconv.Atoi(constant.MysqlDefaultPort)
+		port, _ = strconv.Atoi(constant.MySQLDefaultPort)
 	}
 
-	cfg.Basic.Host = utils.GetEnv("MYSQL_HOST", constant.MysqlDefaultHost)
+	cfg.Basic.Host = utils.GetEnv("MYSQL_HOST", constant.MySQLDefaultHost)
 	cfg.Basic.Port = port
-	cfg.Basic.User = utils.GetEnv("MYSQL_USER", constant.MysqlDefaultUser)
-	cfg.Basic.Password = utils.GetEnv("MYSQL_PASSWORD", constant.MysqlDefaultPassword)
-	cfg.Basic.Database = utils.GetEnv("MYSQL_DATABASE", constant.MysqlDefaultDatabase)
+	cfg.Basic.User = utils.GetEnv("MYSQL_USER", constant.MySQLDefaultUser)
+	cfg.Basic.Password = utils.GetEnv("MYSQL_PASSWORD", constant.MySQLDefaultPassword)
+	cfg.Basic.Database = utils.GetEnv("MYSQL_DATABASE", constant.MySQLDefaultDatabase)
 
 	utils.SysInfo(fmt.Sprintf("MySQL | host: %s | port: %d | user: %s | database: %s",
 		cfg.Basic.Host, cfg.Basic.Port, cfg.Basic.User, cfg.Basic.Database))

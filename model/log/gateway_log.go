@@ -1,9 +1,8 @@
 package log
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -18,12 +17,25 @@ type GatewayLog struct {
 	ErrorMessage string      `gorm:"column:error_message;type:text" json:"error_message"`        // 错误信息
 	LogDetails   common.JSON `gorm:"column:log_details;type:json" json:"log_details"`            // 详细日志信息
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"` // 记录创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 记录创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 记录更新时间
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName 表名
 func (GatewayLog) TableName() string {
 	return "gateway_logs"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (gatewayLog *GatewayLog) BeforeCreate(tx *gorm.DB) error {
+	gatewayLog.CreatedAt = utils.MySQLTime(utils.GetTime())
+	gatewayLog.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (gatewayLog *GatewayLog) BeforeUpdate(tx *gorm.DB) error {
+	gatewayLog.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

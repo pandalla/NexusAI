@@ -1,9 +1,8 @@
 package log
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -38,12 +37,25 @@ type RelayLog struct {
 	ResponseTokens  int         `gorm:"column:response_tokens;not null;default:0" json:"response_tokens"`                         // 响应token数量
 	QuotaConsumed   float64     `gorm:"column:quota_consumed;type:decimal(10,6);not null;default:0.000000" json:"quota_consumed"` // 消耗的配额数量
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                          // 记录创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 记录更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 记录创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 记录更新时间
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName 表名
 func (RelayLog) TableName() string {
 	return "relay_logs"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (relayLog *RelayLog) BeforeCreate(tx *gorm.DB) error {
+	relayLog.CreatedAt = utils.MySQLTime(utils.GetTime())
+	relayLog.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (relayLog *RelayLog) BeforeUpdate(tx *gorm.DB) error {
+	relayLog.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }
