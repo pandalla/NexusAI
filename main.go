@@ -1,13 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"nexus-ai/constant"
 	"nexus-ai/middleware"
+	"nexus-ai/model"
+	"nexus-ai/mysql"
 	"nexus-ai/redis"
+	"nexus-ai/repository"
 	"nexus-ai/router"
 	"nexus-ai/utils"
+
 	"os"
 	"strconv"
 
@@ -16,6 +21,30 @@ import (
 
 func main() {
 	utils.SetupLog()
+
+	// 初始化MySQL
+	if err := mysql.Setup(); err != nil {
+		utils.FatalLog("MySQL | " + err.Error())
+	}
+	utils.SysInfo("MySQL setup completed")
+	defer func() {
+		if err := mysql.Shutdown(); err != nil {
+			utils.SysError("MySQL | " + err.Error())
+		}
+	}()
+
+	// 初始化Gorm
+	if err := model.InitGorm(); err != nil {
+		utils.FatalLog("Gorm | " + err.Error())
+	}
+	utils.SysInfo("Gorm setup completed")
+	// 创建测试用户
+	userRepo := repository.NewUserRepository(model.GetDB())
+	if err := userRepo.CreateTestUser(context.Background()); err != nil {
+		utils.SysError("Create test user failed: " + err.Error())
+	} else {
+		utils.SysInfo("Test user created successfully")
+	}
 
 	// 初始化Redis
 	if err := redis.Setup(); err != nil {

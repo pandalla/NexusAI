@@ -4,14 +4,15 @@ type UserIDKeyType string    // 基于string的UserIDKeyType，可以避免与�
 type RequestIDKeyType string // 基于string的RequestIDKeyType，可以避免与其他库的冲突
 
 const (
-	FrontendPort = "11000"
-	BackendPort  = "10000"
-	LogMaxCount  = 100000000
-	LogDir       = "./logs"
-	GitRepoURL   = "https://github.com/pandalla/NexusAI.git"
-	UserIDKey    = UserIDKeyType("X-Nexus-AI-User-ID")
-	RequestIDKey = RequestIDKeyType("X-Nexus-AI-Request-ID")
-	KeyCharset   = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	FrontendPort  = "11000"
+	BackendPort   = "10000"
+	LogMaxCount   = 100000000
+	LogDir        = "./logs"
+	GitRepoURL    = "https://github.com/pandalla/NexusAI.git"
+	UserIDKey     = UserIDKeyType("X-Nexus-AI-User-ID")
+	RequestIDKey  = RequestIDKeyType("X-Nexus-AI-Request-ID")
+	KeyCharset    = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	NumberCharset = "0123456789"
 )
 
 const ( // 默认mysql配置
