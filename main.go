@@ -28,6 +28,13 @@ func main() {
 		}
 	}()
 
+	// 执行Redis基准测试
+	if err := redis.RunBenchmarks(); err != nil {
+		utils.SysError("Redis benchmarks failed: " + err.Error())
+	} else {
+		utils.SysInfo("Redis benchmarks completed successfully")
+	}
+
 	// 设置gin模式
 	if os.Getenv("GIN_MODE") != "debug" {
 		gin.SetMode(gin.ReleaseMode)
