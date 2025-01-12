@@ -16,13 +16,14 @@ type Channel struct {
 	ChannelDescription string `gorm:"column:channel_description;type:text" json:"channel_description"`               // 渠道描述信息
 	Status             int8   `gorm:"column:status;index;not null;default:1" json:"status"`                          // 渠道状态，1:正常 0:禁用
 
-	ChannelModels   common.JSON `gorm:"column:channel_models;type:json" json:"channel_models"`     // 支持的模型列表配置
-	UpstreamOptions common.JSON `gorm:"column:upstream_options;type:json" json:"upstream_options"` // 上游服务配置信息(endpoint/timeout等)
-	AuthOptions     common.JSON `gorm:"column:auth_options;type:json" json:"auth_options"`         // 认证配置信息(key/secret等)
-	RetryOptions    common.JSON `gorm:"column:retry_options;type:json" json:"retry_options"`       // 重试策略配置
-	RateLimit       common.JSON `gorm:"column:rate_limit;type:json" json:"rate_limit"`             // 速率限制配置
-	ModelMapping    common.JSON `gorm:"column:model_mapping;type:json" json:"model_mapping"`       // 模型映射配置，用于模型名称转换
-	TestModels      common.JSON `gorm:"column:test_models;type:json" json:"test_models"`           // 测试模型配置
+	ChannelModels      common.JSON `gorm:"column:channel_models;type:json" json:"channel_models"`             // 支持的模型列表配置
+	ChannelPriceFactor common.JSON `gorm:"column:channel_price_factor;type:json" json:"channel_price_factor"` // 渠道价格系数
+	UpstreamOptions    common.JSON `gorm:"column:upstream_options;type:json" json:"upstream_options"`         // 上游服务配置信息(endpoint/timeout等)
+	AuthOptions        common.JSON `gorm:"column:auth_options;type:json" json:"auth_options"`                 // 认证配置信息(key/secret等)
+	RetryOptions       common.JSON `gorm:"column:retry_options;type:json" json:"retry_options"`               // 重试策略配置
+	RateLimit          common.JSON `gorm:"column:rate_limit;type:json" json:"rate_limit"`                     // 速率限制配置
+	ModelMapping       common.JSON `gorm:"column:model_mapping;type:json" json:"model_mapping"`               // 模型映射配置，用于模型名称转换
+	TestModels         common.JSON `gorm:"column:test_models;type:json" json:"test_models"`                   // 测试模型配置
 
 	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                          // 渠道创建时间
 	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 渠道信息最后更新时间
