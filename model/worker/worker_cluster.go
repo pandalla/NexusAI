@@ -1,9 +1,8 @@
 package worker
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -25,12 +24,25 @@ type WorkerCluster struct {
 	MaintenanceWindow    common.JSON `gorm:"column:maintenance_window;type:json" json:"maintenance_window"`                      // 维护窗口配置
 	Status               int8        `gorm:"column:status;index;not null;default:1" json:"status"`                               // 集群状态 1:正常 0:禁用
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"`
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName 表名
 func (WorkerCluster) TableName() string {
 	return "worker_clusters"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (workerCluster *WorkerCluster) BeforeCreate(tx *gorm.DB) error {
+	workerCluster.CreatedAt = utils.MySQLTime(utils.GetTime())
+	workerCluster.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (workerCluster *WorkerCluster) BeforeUpdate(tx *gorm.DB) error {
+	workerCluster.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

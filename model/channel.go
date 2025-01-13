@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -25,12 +24,25 @@ type Channel struct {
 	ModelMapping       common.JSON `gorm:"column:model_mapping;type:json" json:"model_mapping"`               // 模型映射配置，用于模型名称转换
 	TestModels         common.JSON `gorm:"column:test_models;type:json" json:"test_models"`                   // 测试模型配置
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                          // 渠道创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 渠道信息最后更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 渠道创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 渠道信息最后更新时间
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName 表名
 func (Channel) TableName() string {
 	return "channels"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (channel *Channel) BeforeCreate(tx *gorm.DB) error {
+	channel.CreatedAt = utils.MySQLTime(utils.GetTime())
+	channel.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (channel *Channel) BeforeUpdate(tx *gorm.DB) error {
+	channel.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

@@ -2,7 +2,7 @@ package model
 
 import (
 	"nexus-ai/common"
-	"time"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -16,11 +16,24 @@ type ChannelGroup struct {
 	ChannelGroupPriceFactor common.JSON `gorm:"column:channel_group_price_factor;type:json" json:"channel_group_price_factor"` // 渠道组价格系数
 	ChannelGroupOptions     common.JSON `gorm:"column:channel_group_options;type:json" json:"channel_group_options"`           // 渠道组配置
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                          // 创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`                                                                      // 删除时间
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 更新时间
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 func (ChannelGroup) TableName() string {
 	return "channel_groups"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (channelGroup *ChannelGroup) BeforeCreate(tx *gorm.DB) error {
+	channelGroup.CreatedAt = utils.MySQLTime(utils.GetTime())
+	channelGroup.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (channelGroup *ChannelGroup) BeforeUpdate(tx *gorm.DB) error {
+	channelGroup.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

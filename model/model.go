@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -23,12 +22,25 @@ type Model struct {
 	ModelAlias   common.JSON `gorm:"column:model_alias;type:json" json:"model_alias"`      // 模型映射
 	ModelOptions common.JSON `gorm:"column:model_options;type:json" json:"model_options"`  // 模型配置
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"`
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName 表名
 func (Model) TableName() string {
 	return "models"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (model *Model) BeforeCreate(tx *gorm.DB) error {
+	model.CreatedAt = utils.MySQLTime(utils.GetTime())
+	model.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (model *Model) BeforeUpdate(tx *gorm.DB) error {
+	model.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

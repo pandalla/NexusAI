@@ -16,11 +16,11 @@ const (
 )
 
 const ( // 默认mysql配置
-	MysqlDefaultHost     = "localhost" // 默认mysql地址
-	MysqlDefaultPort     = "11001"     // 默认mysql端口
-	MysqlDefaultUser     = "nexus"     // 默认mysql用户
-	MysqlDefaultPassword = "nexus123"  // 默认mysql密码
-	MysqlDefaultDatabase = "nexus"     // 默认mysql数据库
+	MySQLDefaultHost     = "localhost" // 默认mysql地址
+	MySQLDefaultPort     = "11001"     // 默认mysql端口
+	MySQLDefaultUser     = "nexus"     // 默认mysql用户
+	MySQLDefaultPassword = "nexus123"  // 默认mysql密码
+	MySQLDefaultDatabase = "nexus"     // 默认mysql数据库
 )
 
 const ( // 默认redis配置

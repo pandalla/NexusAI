@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"nexus-ai/model"
 	"nexus-ai/utils"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -147,13 +146,11 @@ func (r *userRepository) CreateTestUser(ctx context.Context) error {
 	randomPhone := fmt.Sprintf("1%s", utils.GenerateRandomNumber(10))
 
 	testUser := &model.User{
-		UserID:    utils.GenerateRandomUUID(12),
-		Username:  randomUsername,
-		Email:     randomEmail,
-		Phone:     randomPhone,
-		Password:  utils.HashPassword("test123456"), // 默认密码
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		UserID:   utils.GenerateRandomUUID(12),
+		Username: randomUsername,
+		Email:    randomEmail,
+		Phone:    randomPhone,
+		Password: utils.HashPassword("test123456"), // 默认密码
 	}
 
 	return r.Create(ctx, testUser)

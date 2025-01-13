@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -21,17 +20,30 @@ type Token struct {
 	TokenQuotaLeft   float64 `gorm:"column:token_quota_left;type:decimal(10,2);not null;default:0.00" json:"token_quota_left"`     // 剩余配额
 	TokenQuotaFrozen float64 `gorm:"column:token_quota_frozen;type:decimal(10,2);not null;default:0.00" json:"token_quota_frozen"` // 冻结配额
 
-	TokenChannels common.JSON `gorm:"column:token_channels;type:json" json:"token_channels"` // 令牌的渠道配置，指定使用channels表的channel_id对应的渠道
-	TokenModels   common.JSON `gorm:"column:token_models;type:json" json:"token_models"`     // 支持的模型列表配置，关联models表的model_id
-	TokenOptions  common.JSON `gorm:"column:token_options;type:json" json:"token_options"`   // 令牌的特殊配置选项(如频率限制/并发限制/IP白名单等)
-	ExpireTime    *time.Time  `gorm:"column:expire_time" json:"expire_time"`                 // 令牌过期时间，为空表示永不过期
+	TokenChannels common.JSON     `gorm:"column:token_channels;type:json" json:"token_channels"` // 令牌的渠道配置，指定使用channels表的channel_id对应的渠道
+	TokenModels   common.JSON     `gorm:"column:token_models;type:json" json:"token_models"`     // 支持的模型列表配置，关联models表的model_id
+	TokenOptions  common.JSON     `gorm:"column:token_options;type:json" json:"token_options"`   // 令牌的特殊配置选项(如频率限制/并发限制/IP白名单等)
+	ExpireTime    utils.MySQLTime `gorm:"column:expire_time" json:"expire_time"`                 // 令牌过期时间，为空表示永不过期
 
-	CreatedAt time.Time      `gorm:"column:created_at;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                                // 令牌创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 令牌信息最后更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`                                                                      // 软删除时间
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;not null" json:"created_at"` // 令牌创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"` // 令牌信息最后更新时间
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`          // 软删除时间
 }
 
 // TableName 表名
 func (Token) TableName() string {
 	return "tokens"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (token *Token) BeforeCreate(tx *gorm.DB) error {
+	token.CreatedAt = utils.MySQLTime(utils.GetTime())
+	token.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (token *Token) BeforeUpdate(tx *gorm.DB) error {
+	token.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

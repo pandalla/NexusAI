@@ -1,7 +1,9 @@
 package model
 
 import (
-	"time"
+	"nexus-ai/utils"
+
+	"gorm.io/gorm"
 )
 
 // 系统中所有API调用的用量记录，包括token使用量、计费信息等
@@ -20,11 +22,24 @@ type Usage struct {
 	PriceTotalFactor float64 `gorm:"column:price_total_factor;type:decimal(10,2);not null;default:1.00" json:"price_total_factor"` // 价格总倍率
 	TotalAmount      float64 `gorm:"column:total_amount;type:decimal(10,6);not null;default:0.000000" json:"total_amount"`         // 总金额，支持6位小数
 
-	CreatedAt time.Time `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                          // 记录创建时间
-	UpdatedAt time.Time `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 记录更新时间
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 记录创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 记录更新时间
 }
 
 // TableName 表名
 func (Usage) TableName() string {
 	return "usages"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (usage *Usage) BeforeCreate(tx *gorm.DB) error {
+	usage.CreatedAt = utils.MySQLTime(utils.GetTime())
+	usage.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (usage *Usage) BeforeUpdate(tx *gorm.DB) error {
+	usage.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

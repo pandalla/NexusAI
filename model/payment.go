@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -26,23 +25,36 @@ type Payment struct {
 	PaymentDescription   string  `gorm:"column:payment_description;size:1000" json:"payment_description"`                      // 支付描述
 	NotifyURL            string  `gorm:"column:notify_url;size:255" json:"notify_url"`                                         // 支付回调通知地址
 
-	PaymenterName   string      `gorm:"column:paymenter_name;size:100" json:"paymenter_name"`      // 付款人姓名/企业名称
-	PaymenterEmail  string      `gorm:"column:paymenter_email;size:100" json:"paymenter_email"`    // 付款人邮箱
-	PaymenterPhone  string      `gorm:"column:paymenter_phone;size:20" json:"paymenter_phone"`     // 付款人电话
-	PaymentInfo     common.JSON `gorm:"column:payment_info;type:json" json:"payment_info"`         // 账单信息(发票信息等)
-	CompanyInfo     common.JSON `gorm:"column:company_info;type:json" json:"company_info"`         // 企业付款信息(营业执照/税号等)
-	CallbackData    common.JSON `gorm:"column:callback_data;type:json" json:"callback_data"`       // 支付回调数据
-	PlatformOptions common.JSON `gorm:"column:platform_options;type:json" json:"platform_options"` // 支付平台特定配置
-	PaymentTime     *time.Time  `gorm:"column:payment_time" json:"payment_time"`                   // 支付成功时间
-	ExpireTime      time.Time   `gorm:"column:expire_time;not null" json:"expire_time"`            // 支付过期时间
-	RefundInfo      common.JSON `gorm:"column:refund_info;type:json" json:"refund_info"`           // 退款信息
+	PaymenterName   string          `gorm:"column:paymenter_name;size:100" json:"paymenter_name"`      // 付款人姓名/企业名称
+	PaymenterEmail  string          `gorm:"column:paymenter_email;size:100" json:"paymenter_email"`    // 付款人邮箱
+	PaymenterPhone  string          `gorm:"column:paymenter_phone;size:20" json:"paymenter_phone"`     // 付款人电话
+	PaymentInfo     common.JSON     `gorm:"column:payment_info;type:json" json:"payment_info"`         // 账单信息(发票信息等)
+	CompanyInfo     common.JSON     `gorm:"column:company_info;type:json" json:"company_info"`         // 企业付款信息(营业执照/税号等)
+	CallbackData    common.JSON     `gorm:"column:callback_data;type:json" json:"callback_data"`       // 支付回调数据
+	PlatformOptions common.JSON     `gorm:"column:platform_options;type:json" json:"platform_options"` // 支付平台特定配置
+	PaymentTime     utils.MySQLTime `gorm:"column:payment_time" json:"payment_time"`                   // 支付成功时间
+	ExpireTime      utils.MySQLTime `gorm:"column:expire_time;" json:"expire_time"`                    // 支付过期时间
+	RefundInfo      common.JSON     `gorm:"column:refund_info;type:json" json:"refund_info"`           // 退款信息
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                          // 记录创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 记录更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`                                                                      // 软删除时间
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 记录创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 记录更新时间
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`                // 软删除时间
 }
 
 // TableName 表名
 func (Payment) TableName() string {
 	return "payments"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (payment *Payment) BeforeCreate(tx *gorm.DB) error {
+	payment.CreatedAt = utils.MySQLTime(utils.GetTime())
+	payment.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (payment *Payment) BeforeUpdate(tx *gorm.DB) error {
+	payment.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

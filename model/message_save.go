@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	"nexus-ai/common"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -32,12 +31,25 @@ type MessageSave struct {
 	PromptTemplate common.JSON `gorm:"column:prompt_template;type:json" json:"prompt_template"`              // 提示词模板
 	MessageExtra   common.JSON `gorm:"column:message_extra;type:json" json:"message_extra"`                  // 消息额外信息
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"`
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName 表名
 func (MessageSave) TableName() string {
 	return "message_saves"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (messageSave *MessageSave) BeforeCreate(tx *gorm.DB) error {
+	messageSave.CreatedAt = utils.MySQLTime(utils.GetTime())
+	messageSave.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (messageSave *MessageSave) BeforeUpdate(tx *gorm.DB) error {
+	messageSave.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }

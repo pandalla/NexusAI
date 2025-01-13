@@ -2,7 +2,7 @@ package model
 
 import (
 	"nexus-ai/common"
-	"time"
+	"nexus-ai/utils"
 
 	"gorm.io/gorm"
 )
@@ -16,11 +16,24 @@ type ModelGroup struct {
 	ModelGroupPriceFactor common.JSON `gorm:"column:model_group_price_factor;type:json" json:"model_group_price_factor"` // 模型组价格系数
 	ModelGroupOptions     common.JSON `gorm:"column:model_group_options;type:json" json:"model_group_options"`           // 模型组配置
 
-	CreatedAt time.Time      `gorm:"column:created_at;index;not null;default:CURRENT_TIMESTAMP(3)" json:"created_at"`                          // 模型组创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)" json:"updated_at"` // 模型组信息最后更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`                                                                      // 模型组删除时间
+	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 模型组创建时间
+	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 模型组信息最后更新时间
+	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`                // 模型组删除时间
 }
 
 func (ModelGroup) TableName() string {
 	return "model_groups"
+}
+
+// BeforeCreate 在创建记录前自动设置时间
+func (modelGroup *ModelGroup) BeforeCreate(tx *gorm.DB) error {
+	modelGroup.CreatedAt = utils.MySQLTime(utils.GetTime())
+	modelGroup.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
+}
+
+// BeforeUpdate 在更新记录前自动设置更新时间
+func (modelGroup *ModelGroup) BeforeUpdate(tx *gorm.DB) error {
+	modelGroup.UpdatedAt = utils.MySQLTime(utils.GetTime())
+	return nil
 }
