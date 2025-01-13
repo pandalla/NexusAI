@@ -1,35 +1,30 @@
 package repository
 
 import (
-	"context"
-	"errors"
 	"fmt"
+	"math/rand"
+	"nexus-ai/common"
+	dto "nexus-ai/dto/model"
 	"nexus-ai/model"
 	"nexus-ai/utils"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 // UserRepository 用户仓储接口
 type UserRepository interface {
-	// 创建用户
-	Create(ctx context.Context, user *model.User) error
-	// 根据用户ID获取用户
-	GetByID(ctx context.Context, userID string) (*model.User, error)
-	// 根据邮箱获取用户
-	GetByEmail(ctx context.Context, email string) (*model.User, error)
-	// 根据手机号获取用户
-	GetByPhone(ctx context.Context, phone string) (*model.User, error)
-	// 根据用户名获取用户
-	GetByUsername(ctx context.Context, username string) (*model.User, error)
-	// 更新用户信息
-	Update(ctx context.Context, user *model.User) error
-	// 删除用户（软删除）
-	Delete(ctx context.Context, userID string) error
-	// 批量获取用户
-	List(ctx context.Context, offset, limit int) ([]*model.User, int64, error)
-	// 创建测试用户
-	CreateTestUser(ctx context.Context) error
+	Create(user *dto.User) error
+	Update(user *dto.User) error
+	Delete(userID string) error
+	GetByID(userID string) (*dto.User, error)
+	GetByEmail(email string) (*dto.User, error)
+	GetByPhone(phone string) (*dto.User, error)
+	GetByUsername(username string) (*dto.User, error)
+	List(page, pageSize int) ([]*dto.User, int64, error)
+	ListByQuota(quota dto.UserQuota, page, pageSize int) ([]*dto.User, int64, error)
+	ListByOptions(options dto.UserOptions, page, pageSize int) ([]*dto.User, int64, error)
+	Benchmark(count int) error
 }
 
 type userRepository struct {
@@ -41,117 +36,279 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db: db}
 }
 
-// Create 创建用户
-func (r *userRepository) Create(ctx context.Context, user *model.User) error {
-	return r.db.WithContext(ctx).Create(user).Error
+// convertToDTO 将数据模型转换为DTO
+func (r *userRepository) convertToDTO(model *model.User) *dto.User {
+	if model == nil {
+		return nil
+	}
+
+	var oauthInfo dto.OAuthInfo
+	var userQuota dto.UserQuota
+	var userOptions dto.UserOptions
+
+	if err := model.OAuthInfo.ToStruct(&oauthInfo); err != nil {
+		utils.SysError("解析OAuth信息失败:" + err.Error())
+	}
+
+	if err := model.UserQuota.ToStruct(&userQuota); err != nil {
+		utils.SysError("解析配额信息失败:" + err.Error())
+	}
+
+	if err := model.UserOptions.ToStruct(&userOptions); err != nil {
+		utils.SysError("解析用户选项失败:" + err.Error())
+	}
+
+	var deletedAt *utils.MySQLTime
+	if model.DeletedAt.Valid {
+		t := utils.MySQLTime(model.DeletedAt.Time)
+		deletedAt = &t
+	}
+
+	return &dto.User{
+		UserID:        model.UserID,
+		UserGroupID:   model.UserGroupID,
+		Username:      model.Username,
+		Password:      model.Password,
+		Email:         model.Email,
+		Phone:         model.Phone,
+		OAuthInfo:     oauthInfo,
+		UserQuota:     userQuota,
+		UserOptions:   userOptions,
+		LastLoginTime: model.LastLoginTime,
+		LastLoginIP:   model.LastLoginIP,
+		Status:        model.Status,
+		CreatedAt:     model.CreatedAt,
+		UpdatedAt:     model.UpdatedAt,
+		DeletedAt:     deletedAt,
+	}
 }
 
-// GetByID 根据用户ID获取用户
-func (r *userRepository) GetByID(ctx context.Context, userID string) (*model.User, error) {
-	var user model.User
-	err := r.db.WithContext(ctx).Where("user_id = ?", userID).First(&user).Error
+// convertToModel 将DTO转换为数据模型
+func (r *userRepository) convertToModel(dto *dto.User) (*model.User, error) {
+	if dto == nil {
+		return nil, nil
+	}
+
+	oauthInfoJSON, err := common.FromStruct(dto.OAuthInfo)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+		return nil, fmt.Errorf("转换OAuth信息失败: %w", err)
+	}
+
+	userQuotaJSON, err := common.FromStruct(dto.UserQuota)
+	if err != nil {
+		return nil, fmt.Errorf("转换配额信息失败: %w", err)
+	}
+
+	userOptionsJSON, err := common.FromStruct(dto.UserOptions)
+	if err != nil {
+		return nil, fmt.Errorf("转换用户选项失败: %w", err)
+	}
+
+	return &model.User{
+		UserID:        dto.UserID,
+		UserGroupID:   dto.UserGroupID,
+		Username:      dto.Username,
+		Password:      dto.Password,
+		Email:         dto.Email,
+		Phone:         dto.Phone,
+		OAuthInfo:     oauthInfoJSON,
+		UserQuota:     userQuotaJSON,
+		UserOptions:   userOptionsJSON,
+		LastLoginTime: dto.LastLoginTime,
+		LastLoginIP:   dto.LastLoginIP,
+		Status:        dto.Status,
+	}, nil
+}
+
+// Create 创建用户
+func (r *userRepository) Create(user *dto.User) error {
+	model, err := r.convertToModel(user)
+	if err != nil {
+		return err
+	}
+	return r.db.Create(model).Error
+}
+
+// Update 更新用户
+func (r *userRepository) Update(user *dto.User) error {
+	modelData, err := r.convertToModel(user)
+	if err != nil {
+		return err
+	}
+	return r.db.Model(&model.User{}).Where("user_id = ?", user.UserID).Updates(modelData).Error
+}
+
+// Delete 删除用户
+func (r *userRepository) Delete(userID string) error {
+	return r.db.Delete(&model.User{}, "user_id = ?", userID).Error
+}
+
+// GetByID 根据ID获取用户
+func (r *userRepository) GetByID(userID string) (*dto.User, error) {
+	var user model.User
+	if err := r.db.Where("user_id = ?", userID).First(&user).Error; err != nil {
 		return nil, err
 	}
-	return &user, nil
+	return r.convertToDTO(&user), nil
 }
 
 // GetByEmail 根据邮箱获取用户
-func (r *userRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *userRepository) GetByEmail(email string) (*dto.User, error) {
 	var user model.User
-	err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
-	return &user, nil
+	return r.convertToDTO(&user), nil
 }
 
 // GetByPhone 根据手机号获取用户
-func (r *userRepository) GetByPhone(ctx context.Context, phone string) (*model.User, error) {
+func (r *userRepository) GetByPhone(phone string) (*dto.User, error) {
 	var user model.User
-	err := r.db.WithContext(ctx).Where("phone = ?", phone).First(&user).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+	if err := r.db.Where("phone = ?", phone).First(&user).Error; err != nil {
 		return nil, err
 	}
-	return &user, nil
+	return r.convertToDTO(&user), nil
 }
 
 // GetByUsername 根据用户名获取用户
-func (r *userRepository) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+func (r *userRepository) GetByUsername(username string) (*dto.User, error) {
 	var user model.User
-	err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
 		return nil, err
 	}
-	return &user, nil
+	return r.convertToDTO(&user), nil
 }
 
-// Update 更新用户信息
-func (r *userRepository) Update(ctx context.Context, user *model.User) error {
-	return r.db.WithContext(ctx).Save(user).Error
-}
-
-// Delete 删除用户（软删除）
-func (r *userRepository) Delete(ctx context.Context, userID string) error {
-	return r.db.WithContext(ctx).Where("user_id = ?", userID).Delete(&model.User{}).Error
-}
-
-// List 批量获取用户
-func (r *userRepository) List(ctx context.Context, offset, limit int) ([]*model.User, int64, error) {
-	var users []*model.User
+// List 获取用户列表
+func (r *userRepository) List(page, pageSize int) ([]*dto.User, int64, error) {
 	var total int64
+	var users []model.User
 
-	err := r.db.WithContext(ctx).Model(&model.User{}).Count(&total).Error
-	if err != nil {
+	offset := (page - 1) * pageSize
+
+	if err := r.db.Model(&model.User{}).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	err = r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&users).Error
-	if err != nil {
+	if err := r.db.Offset(offset).Limit(pageSize).Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
 
-	return users, total, nil
+	dtoList := make([]*dto.User, len(users))
+	for i, u := range users {
+		dtoList[i] = r.convertToDTO(&u)
+	}
+
+	return dtoList, total, nil
 }
 
-// CreateTestUser 创建测试用户
-func (r *userRepository) CreateTestUser(ctx context.Context) error {
-	// 检查是否已存在测试用户
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&model.User{}).Where("username LIKE ?", "test_user_%").Count(&count).Error; err != nil {
-		return fmt.Errorf("检查测试用户失败: %w", err)
+// ListByQuota 根据配额筛选用户
+func (r *userRepository) ListByQuota(quota dto.UserQuota, page, pageSize int) ([]*dto.User, int64, error) {
+	var total int64
+	var users []model.User
+
+	offset := (page - 1) * pageSize
+	query := r.db.Model(&model.User{})
+
+	quotaJSON, err := common.FromStruct(quota)
+	if err != nil {
+		return nil, 0, fmt.Errorf("转换配额信息失败: %w", err)
 	}
 
-	if count > 0 {
-		return fmt.Errorf("测试用户已存在")
+	query = query.Where("user_quota @> ?", quotaJSON)
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
 
-	// 生成随机用户名
-	randomUsername := fmt.Sprintf("test_user_%s", utils.GenerateRandomString(8))
-	// 生成随机邮箱
-	randomEmail := fmt.Sprintf("test_%s@example.com", utils.GenerateRandomString(8))
-	// 生成随机手机号
-	randomPhone := fmt.Sprintf("1%s", utils.GenerateRandomNumber(10))
-
-	testUser := &model.User{
-		UserID:   utils.GenerateRandomUUID(12),
-		Username: randomUsername,
-		Email:    randomEmail,
-		Phone:    randomPhone,
-		Password: utils.HashPassword("test123456"), // 默认密码
+	if err := query.Offset(offset).Limit(pageSize).Find(&users).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return r.Create(ctx, testUser)
+	dtoList := make([]*dto.User, len(users))
+	for i, u := range users {
+		dtoList[i] = r.convertToDTO(&u)
+	}
+
+	return dtoList, total, nil
+}
+
+// ListByOptions 根据用户选项筛选用户
+func (r *userRepository) ListByOptions(options dto.UserOptions, page, pageSize int) ([]*dto.User, int64, error) {
+	var total int64
+	var users []model.User
+
+	offset := (page - 1) * pageSize
+	query := r.db.Model(&model.User{})
+
+	optionsJSON, err := common.FromStruct(options)
+	if err != nil {
+		return nil, 0, fmt.Errorf("转换用户选项失败: %w", err)
+	}
+
+	query = query.Where("user_options @> ?", optionsJSON)
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := query.Offset(offset).Limit(pageSize).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	dtoList := make([]*dto.User, len(users))
+	for i, u := range users {
+		dtoList[i] = r.convertToDTO(&u)
+	}
+
+	return dtoList, total, nil
+}
+
+// Benchmark 执行基准测试
+func (r *userRepository) Benchmark(count int) error {
+	utils.SysInfo("开始执行用户基准测试...")
+	startTime := time.Now()
+
+	for i := 0; i < count; i++ {
+		testUser := &dto.User{
+			Username: fmt.Sprintf("benchmark_user_%d", i),
+			Email:    fmt.Sprintf("benchmark_%d@example.com", i),
+			Phone:    fmt.Sprintf("1%010d", rand.Intn(10000000000)),
+			Password: utils.HashPassword(fmt.Sprintf("test%d", i)),
+			UserQuota: dto.UserQuota{
+				TotalQuota:  float64(rand.Intn(1000)),
+				FrozenQuota: float64(rand.Intn(100)),
+				GiftQuota:   float64(rand.Intn(100)),
+			},
+			UserOptions: dto.UserOptions{
+				MaxConcurrentRequests: rand.Intn(10) + 1,
+				DefaultLevel:          rand.Intn(3) + 1,
+				APIDiscount:           float64(rand.Intn(50)+50) / 100,
+			},
+			Status: 1,
+		}
+
+		// 创建
+		if err := r.Create(testUser); err != nil {
+			utils.SysError("创建用户失败: " + err.Error())
+			return err
+		}
+
+		// 更新
+		testUser.UserOptions.DefaultLevel = rand.Intn(5) + 1
+		if err := r.Update(testUser); err != nil {
+			utils.SysError("更新用户失败: " + err.Error())
+			return err
+		}
+
+		// 删除
+		if err := r.Delete(testUser.UserID); err != nil {
+			utils.SysError("删除用户失败: " + err.Error())
+			return err
+		}
+	}
+
+	duration := time.Since(startTime)
+	utils.SysInfo("基准测试完成，总耗时: " + duration.String() + ", 平均每组操作耗时: " + (duration / time.Duration(count)).String())
+	return nil
 }
