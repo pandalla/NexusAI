@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"nexus-ai/constant"
@@ -20,6 +21,12 @@ import (
 )
 
 func main() {
+	// 解析命令行参数
+	redisTest := flag.Int("redis", 0, "是否执行Redis基准测试")
+	mysqlTest := flag.Int("mysql", 0, "是否执行MySQL基准测试")
+	flag.Parse()
+
+	// 初始化服务日志
 	utils.SetupLog()
 
 	// 初始化MySQL
@@ -39,10 +46,6 @@ func main() {
 	}
 	utils.SysInfo("Gorm setup completed")
 
-	// 执行MySQL基准测试
-	test.TestUserRepository()
-	test.TestUserGroupRepository()
-
 	// 初始化Redis
 	if err := redis.Setup(); err != nil {
 		utils.FatalLog("Redis | " + err.Error())
@@ -53,12 +56,18 @@ func main() {
 			utils.SysError("Redis | " + err.Error())
 		}
 	}()
-
+	utils.SysInfo("是否执行MySQL基准测试: " + strconv.Itoa(*mysqlTest))
+	// 执行MySQL基准测试
+	if *mysqlTest > 0 {
+		test.TestRepository(*mysqlTest)
+	}
 	// 执行Redis基准测试
-	if err := redis.RunBenchmarks(); err != nil {
-		utils.SysError("Redis benchmarks failed: " + err.Error())
-	} else {
-		utils.SysInfo("Redis benchmarks completed successfully")
+	if *redisTest > 0 {
+		if err := redis.RunBenchmarks(); err != nil {
+			utils.SysError("Redis benchmarks failed: " + err.Error())
+		} else {
+			utils.SysInfo("Redis benchmarks completed successfully")
+		}
 	}
 
 	// 设置gin模式

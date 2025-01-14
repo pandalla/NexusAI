@@ -85,12 +85,21 @@ func (r *userGroupRepository) convertToModel(dto *dto.UserGroup) (*model.UserGro
 		return nil, fmt.Errorf("转换配置选项失败: %w", err)
 	}
 
+	var deletedAt gorm.DeletedAt
+	if dto.DeletedAt != nil {
+		deletedAt.Time = time.Time(*dto.DeletedAt)
+		deletedAt.Valid = true
+	}
+
 	return &model.UserGroup{
 		UserGroupID:          dto.UserGroupID,
 		UserGroupName:        dto.UserGroupName,
 		UserGroupDescription: dto.UserGroupDescription,
 		UserGroupPriceFactor: priceFactorJSON,
 		UserGroupOptions:     optionsJSON,
+		CreatedAt:            dto.CreatedAt,
+		UpdatedAt:            dto.UpdatedAt,
+		DeletedAt:            deletedAt,
 	}, nil
 }
 
@@ -230,6 +239,7 @@ func (r *userGroupRepository) Benchmark(count int) error {
 	for i := 0; i < count; i++ {
 		// 创建测试用户组
 		testGroup := &dto.UserGroup{
+			UserGroupID:          utils.GenerateRandomUUID(12),
 			UserGroupName:        fmt.Sprintf("benchmark_group_%d", i),
 			UserGroupDescription: "基准测试用户组",
 			UserGroupPriceFactor: dto.UserGroupPriceFactor{
@@ -253,15 +263,22 @@ func (r *userGroupRepository) Benchmark(count int) error {
 			return err
 		}
 
-		// 更新
-		testGroup.UserGroupDescription = "已更新的基准测试用户组"
-		if err := r.Update(testGroup); err != nil {
+		// 在创建后获取ID
+		createdGroup, err := r.GetByID(testGroup.UserGroupID)
+		if err != nil {
+			utils.SysError("获取创建的用户组失败: " + err.Error())
+			return err
+		}
+
+		// 更新时使用获取到的完整记录
+		createdGroup.UserGroupDescription = "已更新的基准测试用户组"
+		if err := r.Update(createdGroup); err != nil {
 			utils.SysError("更新用户组失败: " + err.Error())
 			return err
 		}
 
 		// 删除
-		if err := r.Delete(testGroup.UserGroupID); err != nil {
+		if err := r.Delete(createdGroup.UserGroupID); err != nil {
 			utils.SysError("删除用户组失败: " + err.Error())
 			return err
 		}

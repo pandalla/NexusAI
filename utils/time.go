@@ -41,6 +41,12 @@ func (t *MySQLTime) Scan(value interface{}) error {
 	switch v := value.(type) {
 	case time.Time:
 		*t = MySQLTime(v)
+	case []byte:
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", string(v))
+		if err != nil {
+			return err
+		}
+		*t = MySQLTime(parsedTime)
 	case string:
 		parsedTime, err := time.Parse("2006-01-02 15:04:05", v)
 		if err != nil {

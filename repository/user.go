@@ -104,6 +104,12 @@ func (r *userRepository) convertToModel(dto *dto.User) (*model.User, error) {
 		return nil, fmt.Errorf("转换用户选项失败: %w", err)
 	}
 
+	var deletedAt gorm.DeletedAt
+	if dto.DeletedAt != nil {
+		deletedAt.Time = time.Time(*dto.DeletedAt)
+		deletedAt.Valid = true
+	}
+
 	return &model.User{
 		UserID:        dto.UserID,
 		UserGroupID:   dto.UserGroupID,
@@ -117,6 +123,9 @@ func (r *userRepository) convertToModel(dto *dto.User) (*model.User, error) {
 		LastLoginTime: dto.LastLoginTime,
 		LastLoginIP:   dto.LastLoginIP,
 		Status:        dto.Status,
+		CreatedAt:     dto.CreatedAt,
+		UpdatedAt:     dto.UpdatedAt,
+		DeletedAt:     deletedAt,
 	}, nil
 }
 
@@ -271,8 +280,9 @@ func (r *userRepository) Benchmark(count int) error {
 
 	for i := 0; i < count; i++ {
 		testUser := &dto.User{
+			UserID:   utils.GenerateRandomUUID(12),
 			Username: fmt.Sprintf("benchmark_user_%d", i),
-			Email:    fmt.Sprintf("benchmark_%d@example.com", i),
+			Email:    fmt.Sprintf("benchmark_%d%s@example.com", i, utils.GenerateRandomString(8)),
 			Phone:    fmt.Sprintf("1%010d", rand.Intn(10000000000)),
 			Password: utils.HashPassword(fmt.Sprintf("test%d", i)),
 			UserQuota: dto.UserQuota{
@@ -294,15 +304,22 @@ func (r *userRepository) Benchmark(count int) error {
 			return err
 		}
 
+		// 在创建后获取ID
+		createdUser, err := r.GetByID(testUser.UserID)
+		if err != nil {
+			utils.SysError("获取创建的用户失败: " + err.Error())
+			return err
+		}
+
 		// 更新
-		testUser.UserOptions.DefaultLevel = rand.Intn(5) + 1
-		if err := r.Update(testUser); err != nil {
+		createdUser.UserOptions.DefaultLevel = rand.Intn(5) + 1
+		if err := r.Update(createdUser); err != nil {
 			utils.SysError("更新用户失败: " + err.Error())
 			return err
 		}
 
 		// 删除
-		if err := r.Delete(testUser.UserID); err != nil {
+		if err := r.Delete(createdUser.UserID); err != nil {
 			utils.SysError("删除用户失败: " + err.Error())
 			return err
 		}
