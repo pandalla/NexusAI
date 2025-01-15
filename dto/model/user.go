@@ -42,14 +42,14 @@ type OAuthInfo struct {
 }
 
 type UserQuota struct {
-	TotalQuota  float64         `json:"total_quota"`  // 总配额
-	FrozenQuota float64         `json:"frozen_quota"` // 冻结配额
-	GiftQuota   float64         `json:"gift_quota"`   // 赠送配额
-	UsefulQuota float64         `json:"useful_quota"` // 可用配额
-	ExceedQuota float64         `json:"exceed_quota"` // 超额配额
-	LimitQuota  float64         `json:"limit_quota"`  // 限制配额
-	LimitExpire utils.MySQLTime `json:"limit_expire"` // 限制过期时间
-
+	TotalQuota      float64         `json:"total_quota"`      // 总配额
+	FrozenQuota     float64         `json:"frozen_quota"`     // 冻结配额
+	GiftQuota       float64         `json:"gift_quota"`       // 赠送配额
+	UsefulQuota     float64         `json:"useful_quota"`     // 可用配额
+	ExceedQuota     float64         `json:"exceed_quota"`     // 超额配额
+	NotifyThreshold float64         `json:"notify_threshold"` // 通知阈值
+	LimitQuota      float64         `json:"limit_quota"`      // 限制配额
+	LimitExpire     utils.MySQLTime `json:"limit_expire"`     // 限制过期时间
 }
 
 type UserOptions struct {
@@ -61,8 +61,8 @@ type UserOptions struct {
 	UserAvatar               string   `json:"user_avatar"`                 // 用户头像
 	UserBackground           string   `json:"user_background"`             // 用户背景
 	UserLanguage             string   `json:"user_language"`               // 用户语言
-	ExceedNotifyEmail        string   `json:"exceed_notify_email"`         // 超额通知邮件
-	ReceiveExceedNotifyMail  int8     `json:"receive_exceed_notify_mail"`  // 是否接收超额邮件通知
+	QuotaNotifyEmail         string   `json:"quota_notify_email"`          // 配额通知邮件
+	ReceiveQuotaNotifyMail   int8     `json:"receive_quota_notify_mail"`   // 是否接收配额邮件通知
 	BillingNotifyEmail       string   `json:"billing_notify_email"`        // 账单通知邮件
 	ReceiveBillingNotifyMail int8     `json:"receive_billing_notify_mail"` // 是否接收账单邮件通知
 	PaymentNotifyEmail       string   `json:"payment_notify_email"`        // 支付通知邮件

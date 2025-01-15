@@ -6,16 +6,8 @@ import (
 
 // QuotaOptions 配额特殊配置
 type QuotaOptions struct {
-	AllowOverdraft   bool     `json:"allow_overdraft"`     // 是否允许透支
-	OverdraftLimit   float64  `json:"overdraft_limit"`     // 透支额度
-	AllowedModels    []string `json:"allowed_models"`      // 允许使用的模型
-	AllowedChannels  []string `json:"allowed_channels"`    // 允许使用的渠道
-	MaxUsagePerDay   float64  `json:"max_usage_per_day"`   // 每日最大使用额度
-	MaxUsagePerMonth float64  `json:"max_usage_per_month"` // 每月最大使用额度
-	NotifyThreshold  float64  `json:"notify_threshold"`    // 通知阈值
-	AutoRenew        bool     `json:"auto_renew"`          // 是否自动续期
-	RenewalAmount    float64  `json:"renewal_amount"`      // 续期金额
-	RenewalPeriod    int      `json:"renewal_period"`      // 续期周期(天)
+	ReceiveQuotaNotifyMail int8   `json:"receive_quota_notify_mail"` // 是否接收配额邮件通知
+	QuotaNotifyEmail       string `json:"quota_notify_email"`        // 配额通知邮件
 }
 
 // Quota DTO结构

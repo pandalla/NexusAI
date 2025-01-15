@@ -260,21 +260,13 @@ func (r *quotaRepository) Benchmark(count int) error {
 			StartTime:   utils.MySQLTime(time.Now()),
 			ExpireTime:  utils.MySQLTime(time.Now().AddDate(0, 0, rand.Intn(365)+1)),
 			QuotaOptions: dto.QuotaOptions{
-				AllowOverdraft:   rand.Intn(2) == 1,
-				OverdraftLimit:   float64(rand.Intn(1000)) / 100,
-				AllowedModels:    []string{"gpt-3.5-turbo", "gpt-4"},
-				AllowedChannels:  []string{"openai", "anthropic"},
-				MaxUsagePerDay:   float64(rand.Intn(100)) / 100,
-				MaxUsagePerMonth: float64(rand.Intn(1000)) / 100,
-				NotifyThreshold:  float64(rand.Intn(100)) / 100,
-				AutoRenew:        rand.Intn(2) == 1,
-				RenewalAmount:    float64(rand.Intn(1000)) / 100,
-				RenewalPeriod:    rand.Intn(30) + 1,
+				ReceiveQuotaNotifyMail: int8(rand.Intn(2)),
+				QuotaNotifyEmail:       fmt.Sprintf("test_%d_%s@example.com", i, utils.GenerateRandomUUID(12)),
 			},
 		}
 
-		testQuota.RemainingAmount = testQuota.QuotaAmount
 		testQuota.FrozenAmount = float64(rand.Intn(int(testQuota.QuotaAmount*100))) / 100
+		testQuota.RemainingAmount = testQuota.QuotaAmount - testQuota.FrozenAmount
 
 		// 创建
 		if err := r.Create(testQuota); err != nil {
