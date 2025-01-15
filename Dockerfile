@@ -38,4 +38,4 @@ RUN mkdir -p /app/logs && chmod 777 /app/logs
 EXPOSE 10000
 
 # 运行应用
-CMD ["./main"] 
+CMD ["./main", "--mysql=10"] 
