@@ -15,6 +15,7 @@ type ChannelPriceFactor struct {
 	RequestPriceFactor    float64 `json:"request_price_factor"`    // 请求价格系数
 	ResponsePriceFactor   float64 `json:"response_price_factor"`   // 响应价格系数
 	CompletionPriceFactor float64 `json:"completion_price_factor"` // 补全价格系数
+	CachePriceFactor      float64 `json:"cache_price_factor"`      // 缓存价格系数
 }
 
 // UpstreamOptions 上游服务配置
@@ -28,11 +29,11 @@ type UpstreamOptions struct {
 
 // AuthOptions 认证配置
 type AuthOptions struct {
-	APIKey      string            `json:"api_key"`      // API密钥
-	APISecret   string            `json:"api_secret"`   // API密钥对应的secret
-	BearerToken string            `json:"bearer_token"` // Bearer令牌
-	Headers     map[string]string `json:"headers"`      // 自定义认证头
-	QueryParams map[string]string `json:"query_params"` // 自定义查询参数
+	APIKey        string            `json:"api_key"`        // API密钥
+	APISecret     string            `json:"api_secret"`     // API密钥对应的secret
+	BearerToken   string            `json:"bearer_token"`   // Bearer令牌
+	Headers       map[string]string `json:"headers"`        // 自定义认证头
+	RequestParams map[string]string `json:"request_params"` // 请求参数
 }
 
 // RetryOptions 重试策略配置
@@ -49,20 +50,17 @@ type RateLimit struct {
 	RequestsPerMinute int `json:"requests_per_minute"` // 每分钟请求数限制
 	RequestsPerHour   int `json:"requests_per_hour"`   // 每小时请求数限制
 	RequestsPerDay    int `json:"requests_per_day"`    // 每天请求数限制
-	TokenBucketSize   int `json:"token_bucket_size"`   // 令牌桶大小
 }
 
 // ModelMapping 模型映射配置
 type ModelMapping struct {
-	LocalToUpstream map[string]string `json:"local_to_upstream"` // 本地模型ID到上游模型ID的映射
-	UpstreamToLocal map[string]string `json:"upstream_to_local"` // 上游模型ID到本地模型ID的映射
-	DefaultUpstream string            `json:"default_upstream"`  // 默认上游模型ID
+	MappingModels []string `json:"mapping_models"` // 模型映射列表
 }
 
 // TestModels 测试模型配置
 type TestModels struct {
-	TestModelIDs []string `json:"test_model_ids"` // 测试模型ID列表
-	DefaultModel string   `json:"default_model"`  // 默认测试模型
+	TestModels       []string `json:"test_models"`        // 测试模型列表
+	DefaultTestModel string   `json:"default_test_model"` // 默认测试模型
 }
 
 // Channel DTO结构

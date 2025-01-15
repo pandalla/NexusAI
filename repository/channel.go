@@ -311,6 +311,7 @@ func (r *channelRepository) Benchmark(count int) error {
 				RequestPriceFactor:    float64(rand.Intn(50)+50) / 100,
 				ResponsePriceFactor:   float64(rand.Intn(50)+50) / 100,
 				CompletionPriceFactor: float64(rand.Intn(50)+50) / 100,
+				CachePriceFactor:      float64(rand.Intn(50)+50) / 100,
 			},
 			UpstreamOptions: dto.UpstreamOptions{
 				Endpoint:    "https://api.example.com",
@@ -320,11 +321,11 @@ func (r *channelRepository) Benchmark(count int) error {
 				DialTimeout: 5,
 			},
 			AuthOptions: dto.AuthOptions{
-				APIKey:      utils.GenerateRandomString(32),
-				APISecret:   utils.GenerateRandomString(64),
-				BearerToken: utils.GenerateRandomString(48),
-				Headers:     map[string]string{"X-Custom": "value"},
-				QueryParams: map[string]string{"version": "v1"},
+				APIKey:        utils.GenerateRandomString(32),
+				APISecret:     utils.GenerateRandomString(64),
+				BearerToken:   utils.GenerateRandomString(48),
+				Headers:       map[string]string{"X-Custom": "value"},
+				RequestParams: map[string]string{"version": "v1"},
 			},
 			RetryOptions: dto.RetryOptions{
 				MaxRetries:      3,
@@ -337,16 +338,13 @@ func (r *channelRepository) Benchmark(count int) error {
 				RequestsPerMinute: rand.Intn(1000) + 100,
 				RequestsPerHour:   rand.Intn(10000) + 1000,
 				RequestsPerDay:    rand.Intn(100000) + 10000,
-				TokenBucketSize:   rand.Intn(100) + 50,
 			},
 			ModelMapping: dto.ModelMapping{
-				LocalToUpstream: map[string]string{"local-1": "upstream-1"},
-				UpstreamToLocal: map[string]string{"upstream-1": "local-1"},
-				DefaultUpstream: "default-model",
+				MappingModels: []string{"local-1", "upstream-1"},
 			},
 			TestModels: dto.TestModels{
-				TestModelIDs: []string{"test-1", "test-2"},
-				DefaultModel: "test-1",
+				TestModels:       []string{"test-1", "test-2"},
+				DefaultTestModel: "test-1",
 			},
 		}
 
