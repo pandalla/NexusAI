@@ -85,8 +85,8 @@ func main() {
 		})
 	}))
 	utils.SysInfo("GIN Config setup completed")
-	server.Use(middleware.RequestIDMiddleware()) // 添加requestID中间件 生成requestID
-	middleware.SetupLog(server)                  // 为gin Engine添加日志服务 记录请求日志
+	server.Use(middleware.RequestIDGenerateMiddleware()) // 添加requestID中间件 生成requestID
+	utils.SetupAPILog(server)                            // 为gin Engine添加日志服务 记录请求日志
 	utils.SysInfo("Middleware setup completed")
 	router.SetupRouter(server)
 	utils.SysInfo("Router setup completed")

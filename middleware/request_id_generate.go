@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RequestIDMiddleware() func(c *gin.Context) {
+func RequestIDGenerateMiddleware() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		requestID := utils.GetTimeString() + "-" + utils.GenerateRandomString(12)
 		c.Set(string(constant.RequestIDKey), requestID)
