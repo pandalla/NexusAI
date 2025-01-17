@@ -4,6 +4,7 @@ import (
 	"nexus-ai/model"
 	"nexus-ai/repository"
 	"nexus-ai/repository/log"
+	"nexus-ai/repository/worker"
 )
 
 func TestRepository(num int) {
@@ -28,6 +29,9 @@ func TestRepository(num int) {
 	TestRequestLogRepository(num)
 	TestWorkerLogRepository(num)
 	TestWorkerMySQLLogRepository(num)
+	TestWorkerClusterRepository(num)
+	TestWorkerGroupRepository(num)
+	TestWorkerNodeRepository(num)
 }
 
 func TestUserRepository(num int) {
@@ -133,4 +137,19 @@ func TestWorkerLogRepository(num int) {
 func TestWorkerMySQLLogRepository(num int) {
 	workerMySQLLogRepo := log.NewWorkerMySQLLogRepository(model.GetDB())
 	workerMySQLLogRepo.Benchmark(num)
+}
+
+func TestWorkerClusterRepository(num int) {
+	workerClusterRepo := worker.NewWorkerClusterRepository(model.GetDB())
+	workerClusterRepo.Benchmark(num)
+}
+
+func TestWorkerGroupRepository(num int) {
+	workerGroupRepo := worker.NewWorkerGroupRepository(model.GetDB())
+	workerGroupRepo.Benchmark(num)
+}
+
+func TestWorkerNodeRepository(num int) {
+	workerNodeRepo := worker.NewWorkerNodeRepository(model.GetDB())
+	workerNodeRepo.Benchmark(num)
 }
