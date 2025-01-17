@@ -9,14 +9,15 @@ type ChannelGroupPriceFactor struct {
 	RequestPriceFactor    float64 `json:"request_price_factor"`    // 请求价格系数
 	ResponsePriceFactor   float64 `json:"response_price_factor"`   // 响应价格系数
 	CompletionPriceFactor float64 `json:"completion_price_factor"` // 补全价格系数
+	CachePriceFactor      float64 `json:"cache_price_factor"`      // 缓存价格系数
 }
 
 // ChannelGroupOptions 渠道组配置选项
 type ChannelGroupOptions struct {
-	MaxConcurrentRequests int      `json:"max_concurrent_requests"` // 最大并发请求数
-	DefaultLevel          int      `json:"default_level"`           // 默认等级
-	ExtraAllowedChannels  []string `json:"extra_allowed_channels"`  // 额外允许使用的渠道列表
-	APIDiscount           float64  `json:"api_discount"`            // API折扣
+	MaxConcurrentRequests int             `json:"max_concurrent_requests"` // 最大并发请求数
+	DefaultLevel          int             `json:"default_level"`           // 默认等级
+	Discount              float64         `json:"discount"`                // 折扣
+	DiscountExpireAt      utils.MySQLTime `json:"discount_expire_at"`      // 折扣过期时间
 }
 
 // ChannelGroup DTO结构

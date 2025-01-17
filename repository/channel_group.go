@@ -179,12 +179,13 @@ func (r *channelGroupRepository) Benchmark(count int) error {
 				RequestPriceFactor:    float64(rand.Intn(50)+50) / 100,
 				ResponsePriceFactor:   float64(rand.Intn(50)+50) / 100,
 				CompletionPriceFactor: float64(rand.Intn(50)+50) / 100,
+				CachePriceFactor:      float64(rand.Intn(50)+50) / 100,
 			},
 			ChannelGroupOptions: dto.ChannelGroupOptions{
 				MaxConcurrentRequests: rand.Intn(10) + 1,
 				DefaultLevel:          rand.Intn(3) + 1,
-				ExtraAllowedChannels:  []string{"openai", "anthropic"},
-				APIDiscount:           float64(rand.Intn(50)+50) / 100,
+				Discount:              float64(rand.Intn(50)+50) / 100,
+				DiscountExpireAt:      utils.MySQLTime(time.Now().Add(time.Duration(rand.Intn(30)) * time.Hour)),
 			},
 		}
 
