@@ -3,6 +3,7 @@ package test
 import (
 	"nexus-ai/model"
 	"nexus-ai/repository"
+	"nexus-ai/repository/log"
 )
 
 func TestRepository(num int) {
@@ -18,6 +19,15 @@ func TestRepository(num int) {
 	TestQuotaRepository(num)
 	TestBillingRepository(num)
 	TestMessageSaveRepository(num)
+	TestGatewayLogRepository(num)
+	TestMasterLogRepository(num)
+	TestMasterMySQLLogRepository(num)
+	TestRedisLogRepository(num)
+	TestRedisPersistLogRepository(num)
+	TestRelayLogRepository(num)
+	TestRequestLogRepository(num)
+	TestWorkerLogRepository(num)
+	TestWorkerMySQLLogRepository(num)
 }
 
 func TestUserRepository(num int) {
@@ -78,4 +88,49 @@ func TestBillingRepository(num int) {
 func TestMessageSaveRepository(num int) {
 	messageSaveRepo := repository.NewMessageSaveRepository(model.GetDB())
 	messageSaveRepo.Benchmark(num)
+}
+
+func TestGatewayLogRepository(num int) {
+	gatewayLogRepo := log.NewGatewayLogRepository(model.GetDB())
+	gatewayLogRepo.Benchmark(num)
+}
+
+func TestMasterLogRepository(num int) {
+	masterLogRepo := log.NewMasterLogRepository(model.GetDB())
+	masterLogRepo.Benchmark(num)
+}
+
+func TestMasterMySQLLogRepository(num int) {
+	masterMySQLLogRepo := log.NewMasterMySQLLogRepository(model.GetDB())
+	masterMySQLLogRepo.Benchmark(num)
+}
+
+func TestRedisLogRepository(num int) {
+	redisLogRepo := log.NewRedisLogRepository(model.GetDB())
+	redisLogRepo.Benchmark(num)
+}
+
+func TestRedisPersistLogRepository(num int) {
+	redisPersistLogRepo := log.NewRedisPersistLogRepository(model.GetDB())
+	redisPersistLogRepo.Benchmark(num)
+}
+
+func TestRelayLogRepository(num int) {
+	relayLogRepo := log.NewRelayLogRepository(model.GetDB())
+	relayLogRepo.Benchmark(num)
+}
+
+func TestRequestLogRepository(num int) {
+	requestLogRepo := log.NewRequestLogRepository(model.GetDB())
+	requestLogRepo.Benchmark(num)
+}
+
+func TestWorkerLogRepository(num int) {
+	workerLogRepo := log.NewWorkerLogRepository(model.GetDB())
+	workerLogRepo.Benchmark(num)
+}
+
+func TestWorkerMySQLLogRepository(num int) {
+	workerMySQLLogRepo := log.NewWorkerMySQLLogRepository(model.GetDB())
+	workerMySQLLogRepo.Benchmark(num)
 }
