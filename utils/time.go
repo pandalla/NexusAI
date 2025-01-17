@@ -40,19 +40,37 @@ func (t *MySQLTime) Scan(value interface{}) error {
 	}
 	switch v := value.(type) {
 	case time.Time:
-		*t = MySQLTime(v)
+		*t = MySQLTime(v.Truncate(time.Second))
 	case []byte:
-		parsedTime, err := time.Parse("2006-01-02 15:04:05", string(v))
-		if err != nil {
-			return err
+		if len(v) == 0 {
+			return nil
 		}
-		*t = MySQLTime(parsedTime)
+		// 先尝试解析带微秒的格式
+		parsedTime, err := time.Parse("2006-01-02 15:04:05.999999", string(v))
+		if err != nil {
+			// 如果失败，尝试标准格式
+			parsedTime, err = time.Parse("2006-01-02 15:04:05", string(v))
+			if err != nil {
+				return err
+			}
+		}
+		// 去除微秒部分
+		*t = MySQLTime(parsedTime.Truncate(time.Second))
 	case string:
-		parsedTime, err := time.Parse("2006-01-02 15:04:05", v)
-		if err != nil {
-			return err
+		if v == "" {
+			return nil
 		}
-		*t = MySQLTime(parsedTime)
+		// 先尝试解析带微秒的格式
+		parsedTime, err := time.Parse("2006-01-02 15:04:05.999999", v)
+		if err != nil {
+			// 如果失败，尝试标准格式
+			parsedTime, err = time.Parse("2006-01-02 15:04:05", v)
+			if err != nil {
+				return err
+			}
+		}
+		// 去除微秒部分
+		*t = MySQLTime(parsedTime.Truncate(time.Second))
 	default:
 		return fmt.Errorf("无法将 %T 转换为 MySQLTime", value)
 	}
