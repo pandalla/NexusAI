@@ -6,8 +6,7 @@ import (
 
 // QuotaOptions 配额特殊配置
 type QuotaOptions struct {
-	ReceiveQuotaNotifyMail int8   `json:"receive_quota_notify_mail"` // 是否接收配额邮件通知
-	QuotaNotifyEmail       string `json:"quota_notify_email"`        // 配额通知邮件
+	QuotaRemark string `json:"quota_remark"` // 配额备注
 }
 
 // Quota DTO结构

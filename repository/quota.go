@@ -260,8 +260,7 @@ func (r *quotaRepository) Benchmark(count int) error {
 			StartTime:   utils.MySQLTime(time.Now()),
 			ExpireTime:  utils.MySQLTime(time.Now().AddDate(0, 0, rand.Intn(365)+1)),
 			QuotaOptions: dto.QuotaOptions{
-				ReceiveQuotaNotifyMail: int8(rand.Intn(2)),
-				QuotaNotifyEmail:       fmt.Sprintf("test_%d_%s@example.com", i, utils.GenerateRandomUUID(12)),
+				QuotaRemark: fmt.Sprintf("测试配额 %d", i),
 			},
 		}
 
