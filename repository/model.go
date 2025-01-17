@@ -286,23 +286,17 @@ func (r *modelRepository) Benchmark(count int) error {
 			Status:           1,
 			ModelPrice: dto.ModelPrice{
 				RequestPrice:    float64(rand.Intn(100)) / 100,
-				CompletionPrice: float64(rand.Intn(100)) / 100,
 				ResponsePrice:   float64(rand.Intn(100)) / 100,
+				CompletionPrice: float64(rand.Intn(100)) / 100,
+				CachePrice:      float64(rand.Intn(100)) / 100,
 			},
 			ModelAlias: dto.ModelAlias{
-				ProviderAlias: []string{"alias1", "alias2"},
-				DisplayName:   fmt.Sprintf("Test Model %d", i),
-				ShortName:     fmt.Sprintf("TM%d", i),
+				DisplayName: fmt.Sprintf("Test Model %d", i),
+				RequestName: fmt.Sprintf("TM%d", i),
 			},
 			ModelOptions: dto.ModelOptions{
-				MaxTokens:        rand.Intn(4000) + 1000,
-				Temperature:      float64(rand.Intn(100)) / 100,
-				TopP:             float64(rand.Intn(100)) / 100,
-				FrequencyPenalty: float64(rand.Intn(200)-100) / 100,
-				PresencePenalty:  float64(rand.Intn(200)-100) / 100,
-				MaxContextLength: rand.Intn(8000) + 2000,
-				RequireAuth:      rand.Intn(2) == 1,
-				DisableRateLimit: rand.Intn(2) == 1,
+				Discount:         float64(rand.Intn(100)) / 100,
+				DiscountExpireAt: utils.MySQLTime(time.Now().Add(time.Duration(rand.Intn(30)) * time.Hour)),
 			},
 		}
 
@@ -320,7 +314,7 @@ func (r *modelRepository) Benchmark(count int) error {
 		}
 
 		// 更新
-		createdModel.ModelOptions.MaxTokens = rand.Intn(8000) + 2000
+		createdModel.ModelOptions.Discount = float64(rand.Intn(100)) / 100
 		if err := r.Update(createdModel); err != nil {
 			utils.SysError("更新模型失败: " + err.Error())
 			return err
