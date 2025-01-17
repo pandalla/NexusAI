@@ -16,6 +16,7 @@ type RequestLog struct {
 	TokenID      string `gorm:"column:token_id;type:char(36);index;not null;foreignKey:Token(TokenID)" json:"token_id"`         // 关联的令牌ID
 	MasterID     string `gorm:"column:master_id;type:char(36);index;foreignKey:Worker(WorkerID)" json:"master_id"`              // 关联的主服务节点ID
 
+	RequestID      string          `gorm:"column:request_id;size:64;index;not null" json:"request_id"`     // 关联的请求ID
 	RequestType    string          `gorm:"column:request_type;size:50;index;not null" json:"request_type"` // 请求类型
 	RequestPath    string          `gorm:"column:request_path;size:255;not null" json:"request_path"`      // 请求路径
 	RequestMethod  string          `gorm:"column:request_method;size:10;not null" json:"request_method"`   // 请求方法(GET/POST等)
@@ -31,6 +32,10 @@ type RequestLog struct {
 	ResponseHeaders common.JSON     `gorm:"column:response_headers;type:json" json:"response_headers"`            // 响应头信息
 	ErrorMessage    string          `gorm:"column:error_message;type:text" json:"error_message"`                  // 错误信息
 	ClientIP        string          `gorm:"column:client_ip;size:50;not null" json:"client_ip"`                   // 客户端IP
+
+	EventType  string      `gorm:"column:event_type;size:50;index;not null" json:"event_type"` // 事件类型(request/response)
+	LogLevel   string      `gorm:"column:log_level;size:20;index;not null" json:"log_level"`   // 日志级别(info/warn/error)
+	LogDetails common.JSON `gorm:"column:log_details;type:json" json:"log_details"`            // 详细日志信息
 
 	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 记录创建时间
 	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 记录更新时间
