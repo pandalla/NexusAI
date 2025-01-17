@@ -44,15 +44,15 @@ func (r *messageSaveRepository) convertToDTO(model *model.MessageSave) *dto.Mess
 	}
 
 	var messageOptions dto.MessageOptions
-	var promptTemplate dto.PromptTemplate
+	var streamOptions dto.StreamOptions
 	var messageExtra dto.MessageExtra
 
 	if err := model.MessageOptions.ToStruct(&messageOptions); err != nil {
 		utils.SysError("解析消息配置失败:" + err.Error())
 	}
 
-	if err := model.PromptTemplate.ToStruct(&promptTemplate); err != nil {
-		utils.SysError("解析提示词模板失败:" + err.Error())
+	if err := model.StreamOptions.ToStruct(&streamOptions); err != nil {
+		utils.SysError("解析流式输出配置失败:" + err.Error())
 	}
 
 	if err := model.MessageExtra.ToStruct(&messageExtra); err != nil {
@@ -72,9 +72,15 @@ func (r *messageSaveRepository) convertToDTO(model *model.MessageSave) *dto.Mess
 		ModelID:          model.ModelID,
 		ChannelID:        model.ChannelID,
 		RequestID:        model.RequestID,
-		MessageTitle:     model.MessageTitle,
-		MessageContent:   model.MessageContent,
-		MessageTokens:    model.MessageTokens,
+		RequestTitle:     model.RequestTitle,
+		RequestContent:   model.RequestContent,
+		ResponseContent:  model.ResponseContent,
+		Input:            model.Input,
+		Instruction:      model.Instruction,
+		Prompt:           model.Prompt,
+		Stream:           model.Stream,
+		StreamOptions:    streamOptions,
+		RequestTokens:    model.RequestTokens,
 		PromptTokens:     model.PromptTokens,
 		CompletionTokens: model.CompletionTokens,
 		Latency:          model.Latency,
@@ -83,7 +89,6 @@ func (r *messageSaveRepository) convertToDTO(model *model.MessageSave) *dto.Mess
 		ErrorType:        model.ErrorType,
 		ErrorInfo:        model.ErrorInfo,
 		MessageOptions:   messageOptions,
-		PromptTemplate:   promptTemplate,
 		MessageExtra:     messageExtra,
 		CreatedAt:        model.CreatedAt,
 		UpdatedAt:        model.UpdatedAt,
@@ -102,9 +107,9 @@ func (r *messageSaveRepository) convertToModel(dto *dto.MessageSave) (*model.Mes
 		return nil, fmt.Errorf("转换消息配置失败: %w", err)
 	}
 
-	promptTemplateJSON, err := common.FromStruct(dto.PromptTemplate)
+	streamOptionsJSON, err := common.FromStruct(dto.StreamOptions)
 	if err != nil {
-		return nil, fmt.Errorf("转换提示词模板失败: %w", err)
+		return nil, fmt.Errorf("转换流式输出配置失败: %w", err)
 	}
 
 	messageExtraJSON, err := common.FromStruct(dto.MessageExtra)
@@ -125,9 +130,14 @@ func (r *messageSaveRepository) convertToModel(dto *dto.MessageSave) (*model.Mes
 		ModelID:          dto.ModelID,
 		ChannelID:        dto.ChannelID,
 		RequestID:        dto.RequestID,
-		MessageTitle:     dto.MessageTitle,
-		MessageContent:   dto.MessageContent,
-		MessageTokens:    dto.MessageTokens,
+		RequestTitle:     dto.RequestTitle,
+		RequestContent:   dto.RequestContent,
+		ResponseContent:  dto.ResponseContent,
+		Input:            dto.Input,
+		Instruction:      dto.Instruction,
+		Prompt:           dto.Prompt,
+		Stream:           dto.Stream,
+		RequestTokens:    dto.RequestTokens,
 		PromptTokens:     dto.PromptTokens,
 		CompletionTokens: dto.CompletionTokens,
 		Latency:          dto.Latency,
@@ -136,7 +146,7 @@ func (r *messageSaveRepository) convertToModel(dto *dto.MessageSave) (*model.Mes
 		ErrorType:        dto.ErrorType,
 		ErrorInfo:        dto.ErrorInfo,
 		MessageOptions:   messageOptionsJSON,
-		PromptTemplate:   promptTemplateJSON,
+		StreamOptions:    streamOptionsJSON,
 		MessageExtra:     messageExtraJSON,
 		CreatedAt:        dto.CreatedAt,
 		UpdatedAt:        dto.UpdatedAt,
@@ -341,31 +351,40 @@ func (r *messageSaveRepository) Benchmark(count int) error {
 			ModelID:          utils.GenerateRandomUUID(12),
 			ChannelID:        utils.GenerateRandomUUID(12),
 			RequestID:        fmt.Sprintf("REQ_%s", utils.GenerateRandomString(16)),
-			MessageTitle:     fmt.Sprintf("测试消息 %d", i),
-			MessageContent:   fmt.Sprintf("这是一条测试消息内容 %d", i),
-			MessageTokens:    rand.Intn(1000),
+			RequestTitle:     fmt.Sprintf("测试消息 %d", i),
+			RequestContent:   fmt.Sprintf("这是一条测试消息内容 %d", i),
+			ResponseContent:  fmt.Sprintf("这是一条测试消息响应内容 %d", i),
+			Input:            fmt.Sprintf("这是一条测试消息输入 %d", i),
+			Instruction:      fmt.Sprintf("这是一条测试消息指令 %d", i),
+			Prompt:           fmt.Sprintf("这是一条测试消息提示词 %d", i),
+			Stream:           int8(rand.Intn(2)),
+			RequestTokens:    rand.Intn(1000),
 			PromptTokens:     rand.Intn(500),
 			CompletionTokens: rand.Intn(500),
 			Latency:          rand.Intn(2000),
-			MessageStatus:    int8(rand.Intn(3) + 1),
-			RetryCount:       rand.Intn(3),
+
 			MessageOptions: dto.MessageOptions{
-				Temperature: float64(rand.Intn(100)) / 100,
-				TopP:        float64(rand.Intn(100)) / 100,
-				MaxTokens:   rand.Intn(2000) + 1000,
-				Stream:      rand.Intn(2) == 1,
+				MaxTokens:           rand.Intn(2000) + 1000,
+				MaxCompletionTokens: rand.Intn(1000) + 500,
+				Temperature:         rand.Intn(100),
+				TopP:                rand.Intn(100),
+				TopK:                rand.Intn(100),
+				Stop:                []string{"test"},
+				ResponseFormat:      "json",
+				EncodingFormat:      "utf-8",
+				N:                   1,
+				Size:                1,
+				Seed:                1,
+				FunctionCall:        1,
+				PresencePenalty:     1,
+				FrequencyPenalty:    1,
+				BestOf:              1,
+				Dimensions:          1,
 			},
-			PromptTemplate: dto.PromptTemplate{
-				TemplateID:      utils.GenerateRandomString(8),
-				TemplateName:    fmt.Sprintf("模板 %d", i),
-				TemplateContent: fmt.Sprintf("模板内容 %d", i),
-			},
-			MessageExtra: dto.MessageExtra{
-				Source:    []string{"web", "api", "sdk"}[rand.Intn(3)],
-				IP:        fmt.Sprintf("192.168.1.%d", rand.Intn(255)),
-				TraceID:   utils.GenerateRandomString(16),
-				SessionID: utils.GenerateRandomString(16),
-			},
+			MessageStatus: int8(rand.Intn(3) + 1),
+			RetryCount:    rand.Intn(3),
+			ErrorType:     "test",
+			ErrorInfo:     "test",
 		}
 
 		// 创建
