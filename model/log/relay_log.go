@@ -37,6 +37,10 @@ type RelayLog struct {
 	ResponseTokens  int         `gorm:"column:response_tokens;not null;default:0" json:"response_tokens"`                         // 响应token数量
 	QuotaConsumed   float64     `gorm:"column:quota_consumed;type:decimal(10,6);not null;default:0.000000" json:"quota_consumed"` // 消耗的配额数量
 
+	EventType  string      `gorm:"column:event_type;size:50;index;not null" json:"event_type"` // 事件类型(request/response)
+	LogLevel   string      `gorm:"column:log_level;size:20;index;not null" json:"log_level"`   // 日志级别(info/warn/error)
+	LogDetails common.JSON `gorm:"column:log_details;type:json" json:"log_details"`            // 详细日志信息
+
 	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 记录创建时间
 	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 记录更新时间
 	DeletedAt gorm.DeletedAt  `gorm:"column:deleted_at" json:"deleted_at"`

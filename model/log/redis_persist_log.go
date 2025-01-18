@@ -9,10 +9,12 @@ import (
 
 // Redis持久化操作日志，包括数据持久化、同步等信息
 type RedisPersistLog struct {
-	RedisPersistLogID string `gorm:"column:redis_persist_log_id;type:char(36);primaryKey;default:(UUID())" json:"redis_persist_log_id"`
-	NodeType          string `gorm:"column:node_type;size:20;index;not null" json:"node_type"`   // 节点类型(master/worker)
-	ServiceID         string `gorm:"column:service_id;size:50;index;not null" json:"service_id"` // 节点ID
-	EventType         string `gorm:"column:event_type;size:50;index;not null" json:"event_type"` // 事件类型(start/complete/error)
+	RedisPersistLogID string      `gorm:"column:redis_persist_log_id;type:char(36);primaryKey;default:(UUID())" json:"redis_persist_log_id"`
+	NodeType          string      `gorm:"column:node_type;size:20;index;not null" json:"node_type"`   // 节点类型(master/worker)
+	ServiceID         string      `gorm:"column:service_id;size:50;index;not null" json:"service_id"` // 节点ID
+	EventType         string      `gorm:"column:event_type;size:50;index;not null" json:"event_type"` // 事件类型(start/complete/error)
+	LogLevel          string      `gorm:"column:log_level;size:20;index;not null" json:"log_level"`   // 日志级别(info/warn/error)
+	LogDetails        common.JSON `gorm:"column:log_details;type:json" json:"log_details"`            // 详细日志信息
 
 	PersistType  string          `gorm:"column:persist_type;size:50;index;not null" json:"persist_type"` // 持久化类型(rdb/aof/混合)
 	TargetTable  string          `gorm:"column:target_table;size:100" json:"target_table"`               // 目标MySQL表
@@ -23,7 +25,6 @@ type RedisPersistLog struct {
 	Duration     int             `gorm:"column:duration;not null;default:0" json:"duration"`             // 持续时间(ms)
 	ErrorType    string          `gorm:"column:error_type;size:50" json:"error_type"`                    // 错误类型
 	ErrorMessage string          `gorm:"column:error_message;type:text" json:"error_message"`            // 错误信息
-	LogDetails   common.JSON     `gorm:"column:log_details;type:json" json:"log_details"`                // 详细日志信息
 
 	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 记录创建时间
 	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 记录更新时间

@@ -15,13 +15,13 @@ type WorkerLog struct {
 	WorkerNodeID    string `gorm:"column:worker_node_id;type:char(36);index;not null;foreignKey:WorkerNode(WorkerNodeID)" json:"worker_node_id"`             // 关联的节点实例ID
 	RequestID       string `gorm:"column:request_id;size:64;index" json:"request_id"`                                                                        // 关联的请求ID
 
-	LogLevel      string      `gorm:"column:log_level;size:20;index;not null" json:"log_level"`   // 日志级别(info/warn/error)
 	EventType     string      `gorm:"column:event_type;size:50;index;not null" json:"event_type"` // 事件类型(task/redis/mysql等)
+	LogLevel      string      `gorm:"column:log_level;size:20;index;not null" json:"log_level"`   // 日志级别(info/warn/error)
+	LogDetails    common.JSON `gorm:"column:log_details;type:json" json:"log_details"`            // 详细日志信息
 	ResourceType  string      `gorm:"column:resource_type;size:50" json:"resource_type"`          // 资源类型(cpu/memory/disk等)
 	ResourceUsage common.JSON `gorm:"column:resource_usage;type:json" json:"resource_usage"`      // 资源使用情况
 	ErrorType     string      `gorm:"column:error_type;size:50" json:"error_type"`                // 错误类型
 	ErrorMessage  string      `gorm:"column:error_message;type:text" json:"error_message"`        // 错误信息
-	LogDetails    common.JSON `gorm:"column:log_details;type:json" json:"log_details"`            // 详细日志信息
 
 	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 记录创建时间
 	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 记录更新时间

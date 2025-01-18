@@ -42,36 +42,53 @@ func (j *JSON) Scan(value interface{}) error {
 	return nil
 }
 
-// MarshalJSON 实现json.Marshaler接口，用于JSON序列化
-// 返回值：
-//   - 如果JSON为nil，返回"null"
-//   - 否则返回原始JSON数据
+// MarshalJSON 实现json.Marshaler接口
 func (j JSON) MarshalJSON() ([]byte, error) {
-	if j == nil {
+	if len(j) == 0 {
 		return []byte("null"), nil
-	}
-	// 验证JSON数据的有效性
-	if !json.Valid(j) {
-		return nil, errors.New("invalid json data")
 	}
 	return j, nil
 }
 
-// UnmarshalJSON 实现json.Unmarshaler接口，用于JSON反序列化
-// 参数：
-//   - data: 要解析的JSON数据
-//
-// 返回值：
-//   - 如果接收者为nil，返回错误
-//   - 如果输入的JSON数据无效，返回错误
+// UnmarshalJSON 实现json.Unmarshaler接口
 func (j *JSON) UnmarshalJSON(data []byte) error {
 	if j == nil {
-		return errors.New("null pointer exception")
-	}
-	// 验证输入的JSON数据是否有效
-	if !json.Valid(data) {
-		return errors.New("invalid json data")
+		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
 	}
 	*j = append((*j)[0:0], data...)
 	return nil
+}
+
+// IsNull 检查JSON值是否为null
+func (j JSON) IsNull() bool {
+	return len(j) == 0 || string(j) == "null"
+}
+
+// String 实现Stringer接口，方便打印调试
+func (j JSON) String() string {
+	if len(j) == 0 {
+		return "null"
+	}
+	return string(j)
+}
+
+// FromStruct 将任意结构体序列化为JSON类型
+func FromStruct(v interface{}) (JSON, error) {
+	if v == nil {
+		return nil, nil
+	}
+	data, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	return JSON(data), nil
+}
+
+// ToStruct 将JSON数据反序列化为指定的结构体
+// dest 必须是指针类型
+func (j JSON) ToStruct(dest interface{}) error {
+	if len(j) == 0 {
+		return nil
+	}
+	return json.Unmarshal(j, dest)
 }
