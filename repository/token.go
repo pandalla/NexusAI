@@ -280,6 +280,7 @@ func (r *tokenRepository) Benchmark(count int) error {
 			TokenQuotaLeft:  float64(rand.Intn(10000)),
 			TokenChannels: dto.TokenChannels{
 				ExtraAllowedChannels: []string{"openai", "anthropic"},
+				PriorityChannels:     []string{"openai"},
 				DefaultTestChannel:   "openai",
 			},
 			TokenModels: dto.TokenModels{

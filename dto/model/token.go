@@ -5,6 +5,7 @@ import "nexus-ai/utils"
 // TokenChannels 令牌渠道配置
 type TokenChannels struct {
 	ExtraAllowedChannels []string `json:"extra_allowed_channels"` // 额外允许使用的渠道ID列表
+	PriorityChannels     []string `json:"priority_channels"`      // 优先使用的渠道ID列表
 	DefaultTestChannel   string   `json:"default_test_channel"`   // 默认测试渠道ID
 }
 
