@@ -12,6 +12,7 @@ const (
 	UserIDKey     = UserIDKeyType("X-Nexus-AI-User-ID")
 	RequestIDKey  = RequestIDKeyType("X-Nexus-AI-Request-ID")
 	TokenKey      = TokenKeyType("X-Nexus-AI-Token")
+	MinimumQuota  = 0.05 // 单词请求最小配额
 	KeyCharset    = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	NumberCharset = "0123456789"
 )
