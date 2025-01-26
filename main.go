@@ -95,6 +95,7 @@ func main() {
 	}))
 	utils.SysInfo("GIN Config setup completed")
 
+	server.Use(middleware.TestRootMiddleware())
 	server.Use(middleware.RequestIDGenerateMiddleware()) // 添加requestID中间件 生成requestID
 	utils.SysInfo("Middleware setup completed")
 
