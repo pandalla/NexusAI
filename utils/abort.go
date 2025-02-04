@@ -19,6 +19,18 @@ func AbortWhenTokenVerifyFailed(c *gin.Context, statusCode int, message string) 
 	LogError(c.Request.Context(), fmt.Sprintf("requestID: %s, type: %s, message: %s", requestID, constant.ErrorTypeTokenVerifyFailed, message))
 }
 
+func AbortWhenIPVerifyFailed(c *gin.Context, statusCode int, message string) {
+	requestID := c.GetString(string(constant.RequestIDKey))
+	c.AbortWithStatusJSON(statusCode, gin.H{
+		"success": false,
+		"error": gin.H{
+			"message": message,
+			"type":    constant.ErrorTypeIPVerifyFailed,
+		},
+	})
+	LogError(c.Request.Context(), fmt.Sprintf("requestID: %s, type: %s, message: %s", requestID, constant.ErrorTypeIPVerifyFailed, message))
+}
+
 func AbortWhenQuotaVerifyFailed(c *gin.Context, statusCode int, message string) {
 	requestID := c.GetString(string(constant.RequestIDKey))
 	c.AbortWithStatusJSON(statusCode, gin.H{
@@ -31,6 +43,18 @@ func AbortWhenQuotaVerifyFailed(c *gin.Context, statusCode int, message string) 
 	LogError(c.Request.Context(), fmt.Sprintf("requestID: %s, type: %s, message: %s", requestID, constant.ErrorTypeQuotaVerifyFailed, message))
 }
 
+func AbortWhenModelVerifyFailed(c *gin.Context, statusCode int, message string) {
+	requestID := c.GetString(string(constant.RequestIDKey))
+	c.AbortWithStatusJSON(statusCode, gin.H{
+		"success": false,
+		"error": gin.H{
+			"message": message,
+			"type":    constant.ErrorTypeModelVerifyFailed,
+		},
+	})
+	LogError(c.Request.Context(), fmt.Sprintf("requestID: %s, type: %s, message: %s", requestID, constant.ErrorTypeModelVerifyFailed, message))
+}
+
 func AbortWhenChannelDistributeFailed(c *gin.Context, statusCode int, message string) {
 	requestID := c.GetString(string(constant.RequestIDKey))
 	c.AbortWithStatusJSON(statusCode, gin.H{
@@ -41,4 +65,16 @@ func AbortWhenChannelDistributeFailed(c *gin.Context, statusCode int, message st
 		},
 	})
 	LogError(c.Request.Context(), fmt.Sprintf("requestID: %s, type: %s, message: %s", requestID, constant.ErrorTypeChannelDistributeFailed, message))
+}
+
+func AbortWhenCommonError(c *gin.Context, statusCode int, message string, typeString string) {
+	requestID := c.GetString(string(constant.RequestIDKey))
+	c.AbortWithStatusJSON(statusCode, gin.H{
+		"success": false,
+		"error": gin.H{
+			"message": message,
+			"type":    typeString,
+		},
+	})
+	LogError(c.Request.Context(), fmt.Sprintf("requestID: %s, type: %s, message: %s", requestID, typeString, message))
 }

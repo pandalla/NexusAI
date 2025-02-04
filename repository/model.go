@@ -161,7 +161,9 @@ func (r *modelRepository) GetByID(modelID string) (*dto.Model, error) {
 // GetByName 根据名称获取模型
 func (r *modelRepository) GetByName(name string) (*dto.Model, error) {
 	var model model.Model
-	if err := r.db.Where("model_name = ?", name).First(&model).Error; err != nil {
+	if err := r.db.Where("model_name = ? AND deleted_at IS NULL", name).
+		Order("created_at DESC").
+		First(&model).Error; err != nil {
 		return nil, err
 	}
 	return r.convertToDTO(&model), nil

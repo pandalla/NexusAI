@@ -31,7 +31,15 @@ func TokenVerifyMiddleware() func(c *gin.Context) {
 			utils.AbortWhenTokenVerifyFailed(c, http.StatusUnauthorized, err.Error())
 			return
 		}
-		c.Set(string(constant.TokenKey), token)
+		clientIP := c.ClientIP()
+		allowedIPs := token.TokenOptions.AllowedIPs
+		disallowedIPs := token.TokenOptions.DisallowedIPs
+		if !utils.IsIPAllowed(clientIP, allowedIPs, disallowedIPs) {
+			utils.AbortWhenIPVerifyFailed(c, http.StatusUnauthorized, "IP not allowed")
+			return
+		}
+
+		c.Set(string(constant.TokenKey), token) // 将令牌信息存储在Gin上下文中
 		c.Next()
 	}
 }

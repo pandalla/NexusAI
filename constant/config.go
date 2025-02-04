@@ -3,6 +3,9 @@ package constant
 type UserIDKeyType string    // 基于string的UserIDKeyType，可以避免与其他库的冲突
 type RequestIDKeyType string // 基于string的RequestIDKeyType，可以避免与其他库的冲突
 type TokenKeyType string     // 基于string的TokenKeyType，可以避免与其他库的冲突
+type ModelKeyType string     // 基于string的ModelKeyType，可以避免与其他库的冲突
+type UserKeyType string      // 基于string的UserKeyType，可以避免与其他库的冲突
+
 const (
 	FrontendPort  = "11000"
 	BackendPort   = "10000"
@@ -12,6 +15,8 @@ const (
 	UserIDKey     = UserIDKeyType("X-Nexus-AI-User-ID")
 	RequestIDKey  = RequestIDKeyType("X-Nexus-AI-Request-ID")
 	TokenKey      = TokenKeyType("X-Nexus-AI-Token")
+	ModelKey      = ModelKeyType("X-Nexus-AI-Model")
+	UserKey       = UserKeyType("X-Nexus-AI-User")
 	MinimumQuota  = 0.05 // 单词请求最小配额
 	KeyCharset    = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	NumberCharset = "0123456789"
@@ -43,4 +48,8 @@ const ( // 默认rabbitmq配置
 
 const (
 	RootUserName = "root"
+)
+
+const (
+	KeyRequestBody = "key_request_body"
 )
