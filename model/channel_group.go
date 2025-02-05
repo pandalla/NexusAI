@@ -13,8 +13,10 @@ type ChannelGroup struct {
 	ChannelGroupName        string `gorm:"column:channel_group_name;size:100;not null" json:"channel_group_name"`                     // 渠道组名称
 	ChannelGroupDescription string `gorm:"column:channel_group_description;type:text" json:"channel_group_description"`               // 渠道组描述
 
-	ChannelGroupPriceFactor common.JSON `gorm:"column:channel_group_price_factor;type:json" json:"channel_group_price_factor"` // 渠道组价格系数
-	ChannelGroupOptions     common.JSON `gorm:"column:channel_group_options;type:json" json:"channel_group_options"`           // 渠道组配置
+	ChannelGroupPriceFactor common.JSON         `gorm:"column:channel_group_price_factor;type:json" json:"channel_group_price_factor"` // 渠道组价格系数
+	ChannelGroupOptions     common.JSON         `gorm:"column:channel_group_options;type:json" json:"channel_group_options"`           // 渠道组配置
+	ChannelGroupChannels    []string            `gorm:"column:channel_group_channels;type:json" json:"channel_group_channels"`         // 渠道组下属渠道
+	ChannelGroupModelsMap   map[string][]string `gorm:"column:channel_group_models_map;type:json" json:"channel_group_models_map"`     // 渠道组下属模型可用渠道表
 
 	CreatedAt utils.MySQLTime `gorm:"column:created_at;index;not null" json:"created_at"` // 创建时间
 	UpdatedAt utils.MySQLTime `gorm:"column:updated_at;not null" json:"updated_at"`       // 更新时间

@@ -5,6 +5,7 @@ type RequestIDKeyType string // 基于string的RequestIDKeyType，可以避免�
 type TokenKeyType string     // 基于string的TokenKeyType，可以避免与其他库的冲突
 type ModelKeyType string     // 基于string的ModelKeyType，可以避免与其他库的冲突
 type UserKeyType string      // 基于string的UserKeyType，可以避免与其他库的冲突
+type ChannelKeyType string    // 基于string的ChannelKeyType，可以避免与其他库的冲突
 
 const (
 	FrontendPort  = "11000"
@@ -17,6 +18,7 @@ const (
 	TokenKey      = TokenKeyType("X-Nexus-AI-Token")
 	ModelKey      = ModelKeyType("X-Nexus-AI-Model")
 	UserKey       = UserKeyType("X-Nexus-AI-User")
+	ChannelKey    = ChannelKeyType("X-Nexus-AI-Channel")
 	MinimumQuota  = 0.05 // 单词请求最小配额
 	KeyCharset    = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	NumberCharset = "0123456789"

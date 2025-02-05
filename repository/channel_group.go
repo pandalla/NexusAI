@@ -20,6 +20,7 @@ type ChannelGroupRepository interface {
 	GetByID(channelGroupID string) (*dto.ChannelGroup, error)
 	GetByName(name string) (*dto.ChannelGroup, error)
 	List(page, pageSize int) ([]*dto.ChannelGroup, int64, error)
+	GetListByDefaultLevel(defaultLevel int) ([]*dto.ChannelGroup, error)
 	Benchmark(count int) error
 }
 
@@ -61,6 +62,8 @@ func (r *channelGroupRepository) convertToDTO(model *model.ChannelGroup) *dto.Ch
 		ChannelGroupDescription: model.ChannelGroupDescription,
 		ChannelGroupPriceFactor: priceFactor,
 		ChannelGroupOptions:     options,
+		ChannelGroupChannels:    model.ChannelGroupChannels,
+		ChannelGroupModelsMap:   model.ChannelGroupModelsMap,
 		CreatedAt:               model.CreatedAt,
 		UpdatedAt:               model.UpdatedAt,
 		DeletedAt:               deletedAt,
@@ -95,6 +98,8 @@ func (r *channelGroupRepository) convertToModel(dto *dto.ChannelGroup) (*model.C
 		ChannelGroupDescription: dto.ChannelGroupDescription,
 		ChannelGroupPriceFactor: priceFactorJSON,
 		ChannelGroupOptions:     optionsJSON,
+		ChannelGroupChannels:    dto.ChannelGroupChannels,
+		ChannelGroupModelsMap:   dto.ChannelGroupModelsMap,
 		CreatedAt:               dto.CreatedAt,
 		UpdatedAt:               dto.UpdatedAt,
 		DeletedAt:               deletedAt,
@@ -165,6 +170,19 @@ func (r *channelGroupRepository) List(page, pageSize int) ([]*dto.ChannelGroup, 
 	return dtoList, total, nil
 }
 
+// GetListByDefaultLevel 根据默认等级获取渠道组列表
+func (r *channelGroupRepository) GetListByDefaultLevel(defaultLevel int) ([]*dto.ChannelGroup, error) {
+	var channelGroups []model.ChannelGroup
+	if err := r.db.Where("channel_group_options->>'default_level' = ?", defaultLevel).Find(&channelGroups).Error; err != nil {
+		return nil, err
+	}
+	dtoList := make([]*dto.ChannelGroup, len(channelGroups))
+	for i, cg := range channelGroups {
+		dtoList[i] = r.convertToDTO(&cg)
+	}
+	return dtoList, nil
+}
+
 // Benchmark 执行基准测试
 func (r *channelGroupRepository) Benchmark(count int) error {
 	utils.SysInfo("开始执行渠道组基准测试...")
@@ -187,6 +205,8 @@ func (r *channelGroupRepository) Benchmark(count int) error {
 				Discount:              float64(rand.Intn(50)+50) / 100,
 				DiscountExpireAt:      utils.MySQLTime(time.Now().Add(time.Duration(rand.Intn(30)) * time.Hour)),
 			},
+			ChannelGroupChannels:  []string{},
+			ChannelGroupModelsMap: map[string][]string{},
 		}
 
 		// 创建

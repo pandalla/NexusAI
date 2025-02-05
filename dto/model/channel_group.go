@@ -27,7 +27,11 @@ type ChannelGroup struct {
 	ChannelGroupDescription string                  `json:"channel_group_description"`  // 渠道组描述
 	ChannelGroupPriceFactor ChannelGroupPriceFactor `json:"channel_group_price_factor"` // 渠道组价格系数
 	ChannelGroupOptions     ChannelGroupOptions     `json:"channel_group_options"`      // 渠道组配置
-	CreatedAt               utils.MySQLTime         `json:"created_at"`                 // 创建时间
-	UpdatedAt               utils.MySQLTime         `json:"updated_at"`                 // 更新时间
-	DeletedAt               *utils.MySQLTime        `json:"deleted_at,omitempty"`       // 删除时间
+
+	ChannelGroupChannels  []string            `json:"channel_group_channels"`   // 渠道组下属渠道
+	ChannelGroupModelsMap map[string][]string `json:"channel_group_models_map"` // 渠道组下属模型可用渠道
+
+	CreatedAt utils.MySQLTime  `json:"created_at"`           // 创建时间
+	UpdatedAt utils.MySQLTime  `json:"updated_at"`           // 更新时间
+	DeletedAt *utils.MySQLTime `json:"deleted_at,omitempty"` // 删除时间
 }

@@ -25,6 +25,7 @@ type TokenOptions struct {
 	DisallowedIPs         []string `json:"disallowed_ips"`          // IP黑名单
 	RequireSignature      bool     `json:"require_signature"`       // 是否要求签名
 	DisableRateLimit      bool     `json:"disable_rate_limit"`      // 是否禁用频率限制
+	AvailableLevels       []int    `json:"available_levels"`        // 可用等级
 }
 
 // Token DTO结构

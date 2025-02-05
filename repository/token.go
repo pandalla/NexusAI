@@ -294,6 +294,7 @@ func (r *tokenRepository) Benchmark(count int) error {
 				MaxRequestsPerDay:     rand.Intn(10000) + 1,
 				RequireSignature:      rand.Intn(2) == 1,
 				DisableRateLimit:      rand.Intn(2) == 1,
+				AvailableLevels:       []int{1, 2, 3},
 			},
 		}
 

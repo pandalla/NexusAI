@@ -26,7 +26,7 @@ func TokenVerifyMiddleware() func(c *gin.Context) {
 			tokenParts = strings.Split(tokenKey, "-")
 			tokenKey = tokenParts[0]
 		}
-		token, err := repository.TokenVerify(tokenKey)
+		token, err := repository.TokenVerify(tokenKey) // 验证token是否有效 返回dto.Token
 		if err != nil {
 			utils.AbortWhenTokenVerifyFailed(c, http.StatusUnauthorized, err.Error())
 			return
