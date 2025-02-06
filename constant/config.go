@@ -20,7 +20,7 @@ const ( // 默认mysql配置
 	MySQLDefaultPort     = "11001"     // 默认mysql端口
 	MySQLDefaultUser     = "nexus"     // 默认mysql用户
 	MySQLDefaultPassword = "nexus123"  // 默认mysql密码
-	MySQLDefaultDatabase = "nexus"     // 默认mysql数据库        // 默认mysql数据库
+	MySQLDefaultDatabase = "nexus"     // 默认mysql数据库
 )
 
 const ( // 默认redis配置
