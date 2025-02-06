@@ -22,12 +22,14 @@ func main() {
 	// 初始化依赖
 	apiClient := api.NewClient(&cfg.KlingAI)
 	videoService := service.NewVideoService(apiClient)
+	controllerService := service.NewImageService(apiClient)
 
 	// 注入控制器（自动类型匹配）
 	videoCtrl := controller.NewVideoController(videoService)
+	imageCtrl := controller.NewImageController(controllerService)
 
 	// 创建路由
-	router := router.NewRouter(videoCtrl)
+	router := router.NewRouter(videoCtrl, imageCtrl)
 
 	// 启动服务器
 	server := &http.Server{

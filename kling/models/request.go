@@ -30,6 +30,18 @@ type CameraConfig struct {
 	Zoom       float32 `json:"zoom,omitempty" validate:"excluded_with_all=Horizontal Vertical Pan Tilt Roll,omitempty,min=-10,max=10"`
 }
 
+// ImageRequest文生图视频请求参数
+type TextToImageRequest struct {
+	Model          string  `json:"model,omitempty" validate:"omitempty,oneof=kling-v1"`
+	Prompt         string  `json:"prompt" validate:"required,max=500"`
+	NegativePrompt string  `json:"negative_prompt,omitempty" validate:"max=200"`
+	Image          string  `json:"image,omitempty"` // Base64或URL
+	ImageFidelity  float64 `json:"image_fidelity,omitempty" validate:"omitempty,min=0,max=1"`
+	N              int     `json:"n,omitempty" validate:"omitempty,min=1,max=9"`
+	AspectRatio    string  `json:"aspect_ratio,omitempty" validate:"omitempty,oneof=16:9 9:16 1:1 4:3 3:4 3:2 2:3"`
+	CallbackURL    string  `json:"callback_url,omitempty" validate:"omitempty,url"`
+}
+
 // 验证组标签
 const (
 	WhenTypeSimple = "required_if=Type simple"

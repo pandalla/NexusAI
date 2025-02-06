@@ -62,7 +62,20 @@ func (c *Client) DoRequest(req *http.Request, v interface{}) error {
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API request failed: %s, body: %s", resp.Status, body)
+		if resp.StatusCode != http.StatusOK {
+			// 解析服务端返回的 JSON 错误
+			var apiErr APIError
+			if err := json.Unmarshal(body, &apiErr); err != nil {
+				// 解析失败时，返回兜底错误
+				return &APIError{
+					Code:      resp.StatusCode,
+					Message:   string(body),
+					RequestID: "",
+				}
+			}
+			return &apiErr
+		}
+
 	}
 
 	return json.NewDecoder(resp.Body).Decode(v)
