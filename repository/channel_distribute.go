@@ -21,7 +21,7 @@ func GetAvailableChannels(requestModel *dto.Model, token *dto.Token) (map[string
 				continue
 			}
 			for _, channelGroup := range channelGroups { // 遍历当前等级的渠道组
-				modelAvailableChannels := channelGroup.ChannelGroupModelsMap[requestModel.ModelID] // 当前渠道组请求模型可用的渠道列表
+				modelAvailableChannels := channelGroup.ChannelGroupChannels.ModelsMap[requestModel.ModelID] // 当前渠道组请求模型可用的渠道列表
 				// 将当前渠道组请求模型可用的渠道列表逐个添加到可用渠道列表
 				for _, channelID := range modelAvailableChannels {
 					availableChannels[channelID] = availableLevel

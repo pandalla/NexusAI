@@ -41,6 +41,7 @@ func (r *channelGroupRepository) convertToDTO(model *model.ChannelGroup) *dto.Ch
 
 	var priceFactor dto.ChannelGroupPriceFactor
 	var options dto.ChannelGroupOptions
+	var channels dto.ChannelGroupChannels
 
 	if err := model.ChannelGroupPriceFactor.ToStruct(&priceFactor); err != nil {
 		utils.SysError("解析价格系数失败:" + err.Error())
@@ -48,6 +49,10 @@ func (r *channelGroupRepository) convertToDTO(model *model.ChannelGroup) *dto.Ch
 
 	if err := model.ChannelGroupOptions.ToStruct(&options); err != nil {
 		utils.SysError("解析配置选项失败:" + err.Error())
+	}
+
+	if err := model.ChannelGroupChannels.ToStruct(&channels); err != nil {
+		utils.SysError("解析渠道组渠道失败:" + err.Error())
 	}
 
 	var deletedAt *utils.MySQLTime
@@ -62,8 +67,7 @@ func (r *channelGroupRepository) convertToDTO(model *model.ChannelGroup) *dto.Ch
 		ChannelGroupDescription: model.ChannelGroupDescription,
 		ChannelGroupPriceFactor: priceFactor,
 		ChannelGroupOptions:     options,
-		ChannelGroupChannels:    model.ChannelGroupChannels,
-		ChannelGroupModelsMap:   model.ChannelGroupModelsMap,
+		ChannelGroupChannels:    channels,
 		CreatedAt:               model.CreatedAt,
 		UpdatedAt:               model.UpdatedAt,
 		DeletedAt:               deletedAt,
@@ -86,6 +90,11 @@ func (r *channelGroupRepository) convertToModel(dto *dto.ChannelGroup) (*model.C
 		return nil, fmt.Errorf("转换配置选项失败: %w", err)
 	}
 
+	channelsJSON, err := common.FromStruct(dto.ChannelGroupChannels)
+	if err != nil {
+		return nil, fmt.Errorf("转换渠道组渠道失败: %w", err)
+	}
+
 	var deletedAt gorm.DeletedAt
 	if dto.DeletedAt != nil {
 		deletedAt.Time = time.Time(*dto.DeletedAt)
@@ -98,8 +107,7 @@ func (r *channelGroupRepository) convertToModel(dto *dto.ChannelGroup) (*model.C
 		ChannelGroupDescription: dto.ChannelGroupDescription,
 		ChannelGroupPriceFactor: priceFactorJSON,
 		ChannelGroupOptions:     optionsJSON,
-		ChannelGroupChannels:    dto.ChannelGroupChannels,
-		ChannelGroupModelsMap:   dto.ChannelGroupModelsMap,
+		ChannelGroupChannels:    channelsJSON,
 		CreatedAt:               dto.CreatedAt,
 		UpdatedAt:               dto.UpdatedAt,
 		DeletedAt:               deletedAt,
@@ -205,8 +213,10 @@ func (r *channelGroupRepository) Benchmark(count int) error {
 				Discount:              float64(rand.Intn(50)+50) / 100,
 				DiscountExpireAt:      utils.MySQLTime(time.Now().Add(time.Duration(rand.Intn(30)) * time.Hour)),
 			},
-			ChannelGroupChannels:  []string{},
-			ChannelGroupModelsMap: map[string][]string{},
+			ChannelGroupChannels: dto.ChannelGroupChannels{
+				Channels:  []string{},
+				ModelsMap: map[string][]string{},
+			},
 		}
 
 		// 创建
