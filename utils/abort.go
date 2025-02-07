@@ -67,6 +67,18 @@ func AbortWhenChannelDistributeFailed(c *gin.Context, statusCode int, message st
 	LogError(c.Request.Context(), fmt.Sprintf("requestID: %s, type: %s, message: %s", requestID, constant.ErrorTypeChannelDistributeFailed, message))
 }
 
+func AbortWhenUserVerifyFailed(c *gin.Context, statusCode int, message string) {
+	requestID := c.GetString(string(constant.RequestIDKey))
+	c.AbortWithStatusJSON(statusCode, gin.H{
+		"success": false,
+		"error": gin.H{
+			"message": message,
+			"type":    constant.ErrorTypeUserVerifyFailed,
+		},
+	})
+	LogError(c.Request.Context(), fmt.Sprintf("requestID: %s, type: %s, message: %s", requestID, constant.ErrorTypeUserVerifyFailed, message))
+}
+
 func AbortWhenCommonError(c *gin.Context, statusCode int, message string, typeString string) {
 	requestID := c.GetString(string(constant.RequestIDKey))
 	c.AbortWithStatusJSON(statusCode, gin.H{

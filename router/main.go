@@ -9,7 +9,7 @@ import (
 )
 
 func SetupRouter(router *gin.Engine) {
-	router.Use(middleware.CORSMiddleware())
+	router.Use(middleware.CORSMiddleware()) // 跨域中间件
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "This is health check!"})
 	})
