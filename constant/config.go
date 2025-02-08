@@ -1,5 +1,7 @@
 package constant
 
+import "time"
+
 type UserIDKeyType string       // 基于string的UserIDKeyType，可以避免与其他库的冲突
 type RequestIDKeyType string    // 基于string的RequestIDKeyType，可以避免与其他库的冲突
 type TokenKeyType string        // 基于string的TokenKeyType，可以避免与其他库的冲突
@@ -57,5 +59,18 @@ const (
 )
 
 const (
+	JwtSecret             = "98yq2*5&!EQxZ4haVn33^D48B&jk@F##i87PC69J$&t5JpU2t^Yxo25R#V@e&eH#"
+	JwtAccessTokenExpiry  = time.Hour * 2
+	JwtRefreshTokenExpiry = time.Hour * 24 * 7
+)
+
+const (
 	KeyRequestBody = "key_request_body"
+)
+
+const (
+	DefaultMaxConcurrentRequests = 100
+	DefaultUserQuota             = 1
+	DefaultUserLevel             = 1
+	DefaultAPIDiscount           = 1
 )

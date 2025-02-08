@@ -14,8 +14,8 @@ import (
 
 // UserRepository 用户仓储接口
 type UserRepository interface {
-	Create(user *dto.User) error
-	Update(user *dto.User) error
+	Create(user *dto.User) (*dto.User, error)
+	Update(user *dto.User) (*dto.User, error)
 	Delete(userID string) error
 	GetByID(userID string) (*dto.User, error)
 	GetByEmail(email string) (*dto.User, error)
@@ -130,21 +130,27 @@ func (r *userRepository) convertToModel(dto *dto.User) (*model.User, error) {
 }
 
 // Create 创建用户
-func (r *userRepository) Create(user *dto.User) error {
+func (r *userRepository) Create(user *dto.User) (*dto.User, error) {
 	model, err := r.convertToModel(user)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return r.db.Create(model).Error
+	if err := r.db.Create(model).Error; err != nil {
+		return nil, err
+	}
+	return r.convertToDTO(model), nil
 }
 
 // Update 更新用户
-func (r *userRepository) Update(user *dto.User) error {
+func (r *userRepository) Update(user *dto.User) (*dto.User, error) {
 	modelData, err := r.convertToModel(user)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return r.db.Model(&model.User{}).Where("user_id = ?", user.UserID).Updates(modelData).Error
+	if err := r.db.Model(&model.User{}).Where("user_id = ?", user.UserID).Updates(modelData).Error; err != nil {
+		return nil, err
+	}
+	return r.GetByID(user.UserID)
 }
 
 // Delete 删除用户
@@ -299,7 +305,7 @@ func (r *userRepository) Benchmark(count int) error {
 		}
 
 		// 创建
-		if err := r.Create(testUser); err != nil {
+		if _, err := r.Create(testUser); err != nil {
 			utils.SysError("创建用户失败: " + err.Error())
 			return err
 		}
@@ -310,10 +316,10 @@ func (r *userRepository) Benchmark(count int) error {
 			utils.SysError("获取创建的用户失败: " + err.Error())
 			return err
 		}
-
+		
 		// 更新
 		createdUser.UserOptions.DefaultLevel = rand.Intn(5) + 1
-		if err := r.Update(createdUser); err != nil {
+		if _, err := r.Update(createdUser); err != nil {
 			utils.SysError("更新用户失败: " + err.Error())
 			return err
 		}

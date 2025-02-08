@@ -75,7 +75,7 @@ func RootGenerate(db *gorm.DB) {
 			UpdatedAt: utils.MySQLTime(time.Now()),
 		}
 
-		if err := userRepo.Create(rootUser); err != nil {
+		if _, err := userRepo.Create(rootUser); err != nil {
 			utils.SysError("创建root用户失败: " + err.Error())
 			return
 		}
