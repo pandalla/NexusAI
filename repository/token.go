@@ -14,8 +14,8 @@ import (
 
 // TokenRepository 令牌仓储接口
 type TokenRepository interface {
-	Create(token *dto.Token) error
-	Update(token *dto.Token) error
+	Create(token *dto.Token) (*dto.Token, error)
+	Update(token *dto.Token) (*dto.Token, error)
 	Delete(tokenID string) error
 	GetByID(tokenID string) (*dto.Token, error)
 	GetByKey(tokenKey string) (*dto.Token, error)
@@ -131,21 +131,27 @@ func (r *tokenRepository) convertToModel(dto *dto.Token) (*model.Token, error) {
 }
 
 // Create 创建令牌
-func (r *tokenRepository) Create(token *dto.Token) error {
+func (r *tokenRepository) Create(token *dto.Token) (*dto.Token, error) {
 	model, err := r.convertToModel(token)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return r.db.Create(model).Error
+	if err := r.db.Create(model).Error; err != nil {
+		return nil, err
+	}
+	return r.convertToDTO(model), nil
 }
 
 // Update 更新令牌
-func (r *tokenRepository) Update(token *dto.Token) error {
+func (r *tokenRepository) Update(token *dto.Token) (*dto.Token, error) {
 	modelData, err := r.convertToModel(token)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return r.db.Model(&model.Token{}).Where("token_id = ?", token.TokenID).Updates(modelData).Error
+	if err := r.db.Model(&model.Token{}).Where("token_id = ?", token.TokenID).Updates(modelData).Error; err != nil {
+		return nil, err
+	}
+	return r.GetByID(token.TokenID)
 }
 
 // Delete 删除令牌
@@ -280,6 +286,7 @@ func (r *tokenRepository) Benchmark(count int) error {
 			TokenQuotaLeft:  float64(rand.Intn(10000)),
 			TokenChannels: dto.TokenChannels{
 				ExtraAllowedChannels: []string{"openai", "anthropic"},
+				PriorityChannels:     []string{"openai"},
 				DefaultTestChannel:   "openai",
 			},
 			TokenModels: dto.TokenModels{
@@ -293,11 +300,13 @@ func (r *tokenRepository) Benchmark(count int) error {
 				MaxRequestsPerDay:     rand.Intn(10000) + 1,
 				RequireSignature:      rand.Intn(2) == 1,
 				DisableRateLimit:      rand.Intn(2) == 1,
+				AvailableLevels:       []int{1, 2, 3},
 			},
 		}
 
 		// 创建
-		if err := r.Create(testToken); err != nil {
+		_, err := r.Create(testToken)
+		if err != nil {
 			utils.SysError("创建令牌失败: " + err.Error())
 			return err
 		}
@@ -311,7 +320,8 @@ func (r *tokenRepository) Benchmark(count int) error {
 
 		// 更新
 		createdToken.TokenOptions.MaxConcurrentRequests = rand.Intn(20) + 1
-		if err := r.Update(createdToken); err != nil {
+		_, err = r.Update(createdToken)
+		if err != nil {
 			utils.SysError("更新令牌失败: " + err.Error())
 			return err
 		}

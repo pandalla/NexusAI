@@ -99,3 +99,8 @@ func (t *MySQLTime) UnmarshalJSON(data []byte) error {
 func (t MySQLTime) String() string {
 	return time.Time(t).Format("2006-01-02 15:04:05")
 }
+
+// IsZero 检查时间是否为零值
+func (t MySQLTime) IsZero() bool {
+	return time.Time(t).IsZero()
+}
