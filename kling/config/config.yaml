@@ -1,0 +1,7 @@
+server:
+  port: 8080
+
+klingai:
+  access_key: "092967588afa4e7ca1cc6912829d58d9"
+  secret_key: "b084a64a10414ef8a110d4c87932ed80"
+  base_url: "https://api.klingai.com"
